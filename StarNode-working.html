@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarNode: Ship Builder</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #0a0a1a;
+            --panel-color: #1a1a2a;
+            --text-color: #ecf0f1;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --highlight-color: #9b59b6;
+            --title-healthy: rgba(52, 152, 219, 0.2);
+            --title-warning: rgba(243, 156, 18, 0.4);
+            --title-danger: rgba(231, 76, 60, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--panel-color);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .resource-icon {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resource-value {
+            font-weight: bold;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3000px;
+            height: 3000px;
+            transform-origin: 0 0;
+            background-image: 
+                linear-gradient(to right, rgba(52, 152, 219, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(52, 152, 219, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .node {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: var(--panel-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            touch-action: none;
+            z-index: 10;
+        }
+
+        .node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .node.selected {
+            border: 2px solid var(--highlight-color);
+            box-shadow: 0 0 15px var(--highlight-color);
+        }
+        
+        .node-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: var(--title-healthy);
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .node-title.warning {
+            background-color: var(--title-warning);
+        }
+        
+        .node-title.danger {
+            background-color: var(--title-danger);
+        }
+        
+        .node-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .node-power {
+            margin-top: 2px;
+            color: var(--warning-color);
+        }
+
+        .connection {
+            position: absolute;
+            background-color: var(--secondary-color);
+            height: 4px;
+            transform-origin: 0 0;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.7;
+        }
+
+        .connection-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 12px solid var(--secondary-color);
+            transform-origin: 0 0;
+            z-index: 5;
+            opacity: 0.7;
+        }
+
+        .node-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 5px;
+        }
+
+        .node-button {
+            width: 22px;
+            height: 22px;
+            background: var(--panel-color);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .connection-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 3px 6px;
+            margin-top: 4px;
+            border-radius: 3px;
+        }
+        
+        .unlink-btn {
+            cursor: pointer;
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        .node-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--panel-color);
+            padding: 10px;
+            overflow-y: auto;
+            border-left: 2px solid var(--primary-color);
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .room-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .room-item {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .room-item:hover {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+
+        .room-title {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .room-details {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .universe-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .universe-btn {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .universe-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .node-details table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .node-details td {
+            padding: 3px 0;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--panel-color);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(52, 152, 219, 0.2);
+            border: 1px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .control-btn:hover {
+            background-color: rgba(52, 152, 219, 0.4);
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            
+            main {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 250px;
+                border-left: none;
+                border-top: 2px solid var(--primary-color);
+            }
+            
+            .controls {
+                bottom: 270px;
+            }
+            
+            .node {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--panel-color);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            max-height: 80%;
+            overflow-y: auto;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .notification-modal {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--panel-color);
+            border: 2px solid var(--warning-color);
+            border-radius: 10px;
+            padding: 15px;
+            width: 300px;
+            z-index: 101;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            transform: translateX(350px);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .notification-modal.show {
+            transform: translateX(0);
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .job-panel {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .job-input {
+            width: 60px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+        }
+        
+        .durability-display {
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>StarNode: Ship Builder</h1>
+        <div class="job-panel">
+            <input type="number" min="1" max="30" value="5" class="job-input" id="job-days">
+            <button class="btn" id="run-job-btn">Run Jobs</button>
+        </div>
+        <div class="resources">
+            <div class="resource">
+                <div class="resource-icon">C</div>
+                <div class="resource-value" id="credits">10,000</div>
+            </div>
+            <div class="resource">
+                <div class="resource-icon">P</div>
+                <div class="resource-value" id="power-display">0</div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="game-container">
+            <div class="grid-container" id="grid">
+                <!-- Nodes will be inserted here by JavaScript -->
+            </div>
+            <div class="controls">
+                <div class="control-btn" id="zoom-out">-</div>
+                <div class="control-btn" id="reset-view">⊙</div>
+                <div class="control-btn" id="zoom-in">+</div>
+                <div class="control-btn" id="delete-mode">🗑️</div>
+                <div class="control-btn" id="connect-mode">🔗</div>
+            </div>
+        </div>
+        <div class="sidebar">
+            <h2>Available Rooms</h2>
+            <input type="text" class="search-box" id="search-rooms" placeholder="Search rooms...">
+            <div class="universe-filter" id="universe-filter">
+                <div class="universe-btn active" data-universe="all">All</div>
+                <div class="universe-btn" data-universe="star-trek">Star Trek</div>
+                <div class="universe-btn" data-universe="star-wars">Star Wars</div>
+                <div class="universe-btn" data-universe="babylon-5">Babylon 5</div>
+                <div class="universe-btn" data-universe="dune">Dune</div>
+            </div>
+            <div class="room-list" id="room-list">
+                <!-- Room items will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="info-panel node-details" id="node-details">
+                <h3>Room Details</h3>
+                <p id="no-selection">No room selected</p>
+                <div id="selection-details" style="display: none;">
+                    <table>
+                        <tr>
+                            <td>Type:</td>
+                            <td id="detail-type"></td>
+                        </tr>
+                        <tr>
+                            <td>Universe:</td>
+                            <td id="detail-universe"></td>
+                        </tr>
+                        <tr>
+                            <td>Power Generated:</td>
+                            <td id="detail-power-gen"></td>
+                        </tr>
+                        <tr>
+                            <td>Power Required:</td>
+                            <td id="detail-power-req"></td>
+                        </tr>
+                        <tr>
+                            <td>Current Power:</td>
+                            <td id="detail-current-power"></td>
+                        </tr>
+                        <tr>
+                            <td>Requirements:</td>
+                            <td id="detail-requirements"></td>
+                        </tr>
+                        <tr>
+                            <td>Connected To:</td>
+                            <td id="detail-connections"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for ship status -->
+    <div class="modal" id="status-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ship Status</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="status-content">
+                <!-- Status will be inserted here -->
+            </div>
+            <button class="btn" id="close-status">Close</button>
+        </div>
+    </div>
+    
+    <!-- Notification modal -->
+    <div class="notification-modal" id="notification-modal">
+        <div class="notification-header">
+            <h3 id="notification-title">Alert</h3>
+            <button class="notification-close">&times;</button>
+        </div>
+        <div id="notification-content">
+            <!-- Notification content will be inserted here -->
+        </div>
+    </div>
+    
+    <!-- Connection details modal -->
+    <div class="modal" id="connections-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Room Connections</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="connections-content">
+                <!-- Connections will be inserted here -->
+            </div>
+            <button class="btn" id="close-connections">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            credits: 10000,
+            nodes: [],
+            connections: [],
+            selectedNode: null,
+            draggedNode: null,
+            connectMode: false,
+            deleteMode: false,
+            selectedRoomType: null,
+            lastNodeId: 0,
+            gridScale: 1,
+            gridOffsetX: 0,
+            gridOffsetY: 0,
+            startPanX: 0,
+            startPanY: 0,
+            isPanning: false,
+            isConnecting: false,
+            connectionStartNode: null,
+            universeFilter: 'all',
+            searchTerm: '',
+            lastConnectionId: 0
+        };
+
+        // Room types database with universe categorization
+        const roomTypes = [
+            // Star Trek Rooms
+            {
+                id: 'warp-core',
+                name: 'Warp Core',
+                universe: 'star-trek',
+                cost: 1000,
+                powerGeneration: 500,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Federation warp core that generates significant power for all ship systems.'
+            },
+            {
+                id: 'impulse-engine',
+                name: 'Impulse Engine',
+                universe: 'star-trek',
+                cost: 600,
+                powerGeneration: 0,
+                powerRequirement: 200,
+                requirements: ['power'],
+                description: 'Sublight propulsion system used for short-range travel.'
+            },
+            {
+                id: 'federation-bridge',
+                name: 'Federation Bridge',
+                universe: 'star-trek',
+                cost: 1200,
+                powerGeneration: 0,
+                powerRequirement: 300,
+                requirements: ['power', 'engines'],
+                description: 'Command center for the entire vessel.'
+            },
+            {
+                id: 'phaser-bank',
+                name: 'Phaser Bank',
+                universe: 'star-trek',
+                cost: 800,
+                powerGeneration: 0,
+                powerRequirement: 250,
+                requirements: ['power'],
+                description: 'Direct energy weapon system used by Starfleet vessels.'
+            },
+            {
+                id: 'shield-generator',
+                name: 'Shield Generator',
+                universe: 'star-trek',
+                cost: 700,
+                powerGeneration: 0,
+                powerRequirement: 200,
+                requirements: ['power'],
+                description: 'Creates defensive energy shields around the vessel.'
+            },
+            
+            // Star Wars Rooms
+            {
+                id: 'hypermatter-reactor',
+                name: 'Hypermatter Reactor',
+                universe: 'star-wars',
+                cost: 1200,
+                powerGeneration: 600,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Highly efficient power generator used in Imperial vessels.'
+            },
+            {
+                id: 'ion-engine',
+                name: 'Ion Engine',
+                universe: 'star-wars',
+                cost: 500,
+                powerGeneration: 0,
+                powerRequirement: 150,
+                requirements: ['power'],
+                description: 'Sublight propulsion system used in TIE fighters and Star Destroyers.'
+            },
+            {
+                id: 'imperial-bridge',
+                name: 'Imperial Bridge',
+                universe: 'star-wars',
+                cost: 1000,
+                powerGeneration: 0,
+                powerRequirement: 250,
+                requirements: ['power', 'engines'],
+                description: 'Command center featuring crew pits and elevated walkways.'
+            },
+            {
+                id: 'turbolaser-battery',
+                name: 'Turbolaser Battery',
+                universe: 'star-wars',
+                cost: 900,
+                powerGeneration: 0,
+                powerRequirement: 300,
+                requirements: ['power'],
+                description: 'Heavy weapon system capable of planetary bombardment.'
+            },
+            {
+                id: 'deflector-shield',
+                name: 'Deflector Shield',
+                universe: 'star-wars',
+                cost: 750,
+                powerGeneration: 0,
+                powerRequirement: 220,
+                requirements: ['power'],
+                description: 'Projects energy shields to protect against incoming attacks.'
+            },
+            
+            // Babylon 5 Rooms
+            {
+                id: 'fusion-reactor',
+                name: 'Fusion Reactor',
+                universe: 'babylon-5',
+                cost: 900,
+                powerGeneration: 450,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Standard Earth Alliance power generation system.'
+            },
+            {
+                id: 'gravimetric-engine',
+                name: 'Gravimetric Engine',
+                universe: 'babylon-5',
+                cost: 650,
+                powerGeneration: 0,
+                powerRequirement: 180,
+                requirements: ['power'],
+                description: 'Propulsion system that manipulates gravitational fields.'
+            },
+            {
+                id: 'earthforce-cic',
+                name: 'Earthforce CIC',
+                universe: 'babylon-5',
+                cost: 950,
+                powerGeneration: 0,
+                powerRequirement: 230,
+                requirements: ['power', 'engines'],
+                description: 'Combat Information Center used in Earth Alliance vessels.'
+            },
+            {
+                id: 'interceptor-grid',
+                name: 'Interceptor Grid',
+                universe: 'babylon-5',
+                cost: 700,
+                powerGeneration: 0,
+                powerRequirement: 200,
+                requirements: ['power'],
+                description: 'Defense system that intercepts incoming projectiles.'
+            },
+            
+            // Dune Rooms
+            {
+                id: 'holtzman-generator',
+                name: 'Holtzman Generator',
+                universe: 'dune',
+                cost: 1500,
+                powerGeneration: 700,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Powerful energy source that can also generate shields.'
+            },
+            {
+                id: 'suspensor-drive',
+                name: 'Suspensor Drive',
+                universe: 'dune',
+                cost: 800,
+                powerGeneration: 0,
+                powerRequirement: 220,
+                requirements: ['power'],
+                description: 'Antigravity propulsion system used by Guild Heighliners.'
+            },
+            {
+                id: 'navigation-chamber',
+                name: 'Navigation Chamber',
+                universe: 'dune',
+                cost: 1300,
+                powerGeneration: 0,
+                powerRequirement: 350,
+                requirements: ['power', 'engines'],
+                description: 'Specialized room for Guild Navigators to fold space.'
+            },
+            {
+                id: 'lasgun-array',
+                name: 'Lasgun Array',
+                universe: 'dune',
+                cost: 850,
+                powerGeneration: 0,
+                powerRequirement: 270,
+                requirements: ['power'],
+                description: 'Energy weapon system (dangerous when used against shields).'
+            }
+        ];
+
+        // DOM elements
+        const gridElement = document.getElementById('grid');
+        const creditsDisplay = document.getElementById('credits');
+        const powerDisplay = document.getElementById('power-display');
+        const roomListElement = document.getElementById('room-list');
+        const searchBox = document.getElementById('search-rooms');
+        const universeFilter = document.getElementById('universe-filter');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const resetViewBtn = document.getElementById('reset-view');
+        const deleteBtn = document.getElementById('delete-mode');
+        const connectBtn = document.getElementById('connect-mode');
+        const nodeDetails = document.getElementById('node-details');
+        const noSelection = document.getElementById('no-selection');
+        const selectionDetails = document.getElementById('selection-details');
+        const statusModal = document.getElementById('status-modal');
+        const closeStatusBtn = document.getElementById('close-status');
+
+        // Initialize the game
+        function initGame() {
+            window.initializing = true;
+            renderRoomList();
+            updateCreditsDisplay();
+            setupEventListeners();
+            centerGridView();
+            
+            // Welcome notification
+            setTimeout(() => {
+                window.initializing = false;
+                showNotification('Welcome to StarNode', 'Build your ship by selecting rooms from the right panel and placing them on the grid. Connect rooms to share resources.');
+            }, 1000);
+        }
+
+        // Update the credits display
+        function updateCreditsDisplay() {
+            creditsDisplay.textContent = gameState.credits.toLocaleString();
+        }
+
+        // Update the power display
+        function updatePowerDisplay() {
+            let totalPower = 0;
+            let usedPower = 0;
+            
+            gameState.nodes.forEach(node => {
+                if (node.effectivePowerGeneration > 0) {
+                    totalPower += node.effectivePowerGeneration;
+                }
+                if (node.effectivePowerConsumption > 0) {
+                    usedPower += node.effectivePowerConsumption;
+                }
+            });
+            
+            powerDisplay.textContent = `${totalPower - usedPower}/${totalPower}`;
+        }
+
+        // Render the room list based on filters
+        function renderRoomList() {
+            roomListElement.innerHTML = '';
+            
+            const filteredRooms = roomTypes.filter(room => {
+                const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
+                const matchesSearch = room.name.toLowerCase().includes(gameState.searchTerm.toLowerCase()) || 
+                                    room.description.toLowerCase().includes(gameState.searchTerm.toLowerCase());
+                return matchesUniverse && matchesSearch;
+            });
+            
+            filteredRooms.forEach(room => {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room-item';
+                roomElement.dataset.roomId = room.id;
+                
+                const powerInfo = room.powerGeneration > 0 
+                    ? `+${room.powerGeneration} Power` 
+                    : `-${room.powerRequirement} Power`;
+                
+                roomElement.innerHTML = `
+                    <div class="room-title">
+                        <span>${room.name}</span>
+                        <span>${room.cost} C</span>
+                    </div>
+                    <div class="room-details">
+                        <div>${powerInfo}</div>
+                        <div>${room.description}</div>
+                    </div>
+                `;
+                
+                roomElement.addEventListener('click', () => selectRoomType(room));
+                roomListElement.appendChild(roomElement);
+            });
+        }
+
+        // Select a room type for placement
+        function selectRoomType(roomType) {
+            if (gameState.credits < roomType.cost) {
+                alert('Not enough credits!');
+                return;
+            }
+            
+            gameState.selectedRoomType = roomType;
+            
+            // Exit other modes when selecting a room
+            gameState.connectMode = false;
+            gameState.deleteMode = false;
+            connectBtn.style.backgroundColor = '';
+            deleteBtn.style.backgroundColor = '';
+            
+            document.querySelectorAll('.room-item').forEach(el => {
+                el.style.backgroundColor = '';
+            });
+            
+            const selectedElement = document.querySelector(`.room-item[data-room-id="${roomType.id}"]`);
+            if (selectedElement) {
+                selectedElement.style.backgroundColor = 'rgba(52, 152, 219, 0.4)';
+            }
+        }
+
+        // Create a new node on the grid
+        function createNode(x, y) {
+            if (!gameState.selectedRoomType) return;
+            
+            const roomType = gameState.selectedRoomType;
+            
+            if (gameState.credits < roomType.cost) {
+                showNotification('Warning', 'Not enough credits to build this room!');
+                return;
+            }
+            
+            gameState.credits -= roomType.cost;
+            
+            const nodeId = ++gameState.lastNodeId;
+            const node = {
+                id: nodeId,
+                type: roomType.id,
+                name: roomType.name,
+                universe: roomType.universe,
+                x: x,
+                y: y,
+                powerGeneration: roomType.powerGeneration,
+                powerRequirement: roomType.powerRequirement,
+                requirements: [...roomType.requirements],
+                inputs: [],
+                outputs: [],
+                effectivePowerGeneration: roomType.powerGeneration,
+                effectivePowerConsumption: roomType.powerRequirement,
+                powerSatisfied: roomType.powerRequirement === 0,
+                durability: 100, // Add durability property, starts at 100%
+                connections: [] // Track connection IDs directly in the node
+            };
+            
+            gameState.nodes.push(node);
+            
+            renderNode(node);
+            updateCreditsDisplay();
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+        }
+
+        // Render a node element on the grid
+        function renderNode(node) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'node';
+            nodeElement.id = `node-${node.id}`;
+            nodeElement.style.left = `${node.x}px`;
+            nodeElement.style.top = `${node.y}px`;
+            
+            // Add a class based on the universe
+            nodeElement.classList.add(`universe-${node.universe}`);
+            
+            const roomType = roomTypes.find(r => r.id === node.type);
+            
+            // Determine title class based on durability
+            let titleClass = '';
+            if (node.durability <= 30) {
+                titleClass = 'danger';
+            } else if (node.durability <= 60) {
+                titleClass = 'warning';
+            }
+            
+            nodeElement.innerHTML = `
+                <div class="node-title ${titleClass}">${node.name}</div>
+                <div class="node-info">
+                    ${roomType.powerGeneration > 0 ? 
+                        `<div>Generating: ${node.effectivePowerGeneration}/${roomType.powerGeneration}</div>` : 
+                        `<div>Consuming: ${node.effectivePowerConsumption}/${roomType.powerRequirement}</div>`
+                    }
+                    <div class="node-power">${node.powerSatisfied ? '✓' : '⚠️'}</div>
+                    <div class="durability-display">Durability: ${Math.floor(node.durability)}%</div>
+                </div>
+                <div class="node-buttons">
+                    <div class="node-button connect-btn" data-node-id="${node.id}" title="Connect">↗</div>
+                    <div class="node-button connections-btn" data-node-id="${node.id}" title="Manage Connections">🔗</div>
+                    <div class="node-button delete-btn" data-node-id="${node.id}" title="Delete">✕</div>
+                </div>
+            `;
+            
+            gridElement.appendChild(nodeElement);
+            
+            // Add event listeners for the node
+            nodeElement.addEventListener('mousedown', (e) => handleNodeMouseDown(e, node));
+            nodeElement.addEventListener('touchstart', (e) => handleNodeTouchStart(e, node), { passive: false });
+            
+            // Add event listeners for node buttons
+            const connectBtn = nodeElement.querySelector('.connect-btn');
+            connectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startConnection(node);
+            });
+            
+            const connectionsBtn = nodeElement.querySelector('.connections-btn');
+            connectionsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showConnectionsModal(node);
+            });
+            
+            const deleteBtn = nodeElement.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteNode(node.id);
+            });
+        }
+
+        // Delete a node
+        function deleteNode(nodeId, showScrapMessage = true) {
+            const node = gameState.nodes.find(n => n.id === nodeId);
+            if (!node) return;
+            
+            // Remove connections involving this node
+            const connectionsToRemove = gameState.connections.filter(
+                conn => conn.fromId === nodeId || conn.toId === nodeId
+            );
+            
+            connectionsToRemove.forEach(conn => {
+                removeConnection(conn.id);
+            });
+            
+            // Remove the node element from the DOM
+            const nodeElement = document.getElementById(`node-${nodeId}`);
+            if (nodeElement) {
+                nodeElement.remove();
+            }
+            
+            // Calculate refund based on durability
+            let refundPercentage = 0.5; // Default 50% refund
+            
+            if (node.durability <= 0 && showScrapMessage) {
+                // If durability is 0 or less, only 20% refund
+                refundPercentage = 0.2;
+                showNotification('Room Scrapped', `${node.name} has been scrapped due to 0% durability. You received ${refundPercentage * 100}% of its value in credits.`);
+            }
+            
+            const refundAmount = Math.floor(roomTypes.find(r => r.id === node.type).cost * refundPercentage);
+            gameState.credits += refundAmount;
+            
+            // Remove the node from the game state
+            gameState.nodes = gameState.nodes.filter(n => n.id !== nodeId);
+            
+            // Clear selection if the deleted node was selected
+            if (gameState.selectedNode && gameState.selectedNode.id === nodeId) {
+                gameState.selectedNode = null;
+                updateNodeInfoPanel();
+            }
+            
+            updateCreditsDisplay();
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+        }
+
+        // Start a connection from a node
+        function startConnection(node) {
+            if (node.outputs.length >= 3) {
+                showNotification('Warning', 'This room already has the maximum number of outputs (3).');
+                return;
+            }
+            
+            gameState.isConnecting = true;
+            gameState.connectionStartNode = node;
+            
+            // Visual feedback
+            document.getElementById(`node-${node.id}`).classList.add('selected');
+            showNotification('Connect Room', 'Select another room to connect to. Click empty space to cancel.');
+        }
+
+        // Finish a connection to a target node
+        function finishConnection(targetNode) {
+            if (!gameState.isConnecting || !gameState.connectionStartNode) return;
+            
+            const sourceNode = gameState.connectionStartNode;
+            
+            // Check if already connected
+            const alreadyConnected = gameState.connections.some(
+                conn => conn.fromId === sourceNode.id && conn.toId === targetNode.id
+            );
+            
+            if (alreadyConnected) {
+                showNotification('Warning', 'These rooms are already connected.');
+                cancelConnection();
+                return;
+            }
+            
+            // Check if trying to connect to self
+            if (sourceNode.id === targetNode.id) {
+                showNotification('Warning', 'Cannot connect a room to itself.');
+                cancelConnection();
+                return;
+            }
+            
+            // Check target node input limit
+            if (targetNode.inputs.length >= 2) {
+                showNotification('Warning', 'Target room already has the maximum number of inputs (2).');
+                cancelConnection();
+                return;
+            }
+            
+            // Create the connection
+            const connectionId = ++gameState.lastConnectionId;
+            const connection = {
+                id: connectionId,
+                fromId: sourceNode.id,
+                toId: targetNode.id
+            };
+            
+            gameState.connections.push(connection);
+            
+            // Update node information
+            sourceNode.outputs.push(targetNode.id);
+            sourceNode.connections.push(connectionId);
+            
+            targetNode.inputs.push(sourceNode.id);
+            targetNode.connections.push(connectionId);
+            
+            // Draw the connection
+            drawConnection(connection);
+            
+            // Reset connection state
+            document.getElementById(`node-${sourceNode.id}`).classList.remove('selected');
+            gameState.isConnecting = false;
+            gameState.connectionStartNode = null;
+            
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+        }
+        
+        // Remove a specific connection
+        function removeConnection(connectionId) {
+            const connection = gameState.connections.find(conn => conn.id === connectionId);
+            if (!connection) return;
+            
+            // Get the nodes
+            const sourceNode = gameState.nodes.find(n => n.id === connection.fromId);
+            const targetNode = gameState.nodes.find(n => n.id === connection.toId);
+            
+            // Remove connection from nodes
+            if (sourceNode) {
+                sourceNode.outputs = sourceNode.outputs.filter(id => id !== connection.toId);
+                sourceNode.connections = sourceNode.connections.filter(id => id !== connection.id);
+            }
+            
+            if (targetNode) {
+                targetNode.inputs = targetNode.inputs.filter(id => id !== connection.fromId);
+                targetNode.connections = targetNode.connections.filter(id => id !== connection.id);
+            }
+            
+            // Remove connection visual elements
+            const connElement = document.getElementById(`connection-${connection.id}`);
+            if (connElement) {
+                connElement.remove();
+            }
+            
+            const arrowElement = document.getElementById(`arrow-${connection.id}`);
+            if (arrowElement) {
+                arrowElement.remove();
+            }
+            
+            // Remove the connection from the game state
+            gameState.connections = gameState.connections.filter(conn => conn.id !== connection.id);
+            
+            // Recalculate efficiency
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+            
+            // Update info panel if a node is selected
+            if (gameState.selectedNode) {
+                updateNodeInfoPanel();
+            }
+        }
+
+        // Calculate the efficiency of all nodes based on connections
+        function calculateNodeEfficiency() {
+            // Reset all nodes to base values
+            gameState.nodes.forEach(node => {
+                node.effectivePowerGeneration = node.powerGeneration * (node.durability / 100); // Scale by durability
+                node.effectivePowerConsumption = node.powerRequirement;
+                node.powerSatisfied = node.powerRequirement === 0;
+                node.powerDistributed = 0;
+            });
+            
+            // Calculate power distribution
+            gameState.nodes.forEach(node => {
+                if (node.effectivePowerGeneration > 0 && node.outputs.length > 0) {
+                    // This node generates power and has outputs
+                    const powerPerOutput = node.effectivePowerGeneration / node.outputs.length;
+                    
+                    node.outputs.forEach(outputId => {
+                        const outputNode = gameState.nodes.find(n => n.id === outputId);
+                        if (outputNode) {
+                            // Add power to the output node
+                            const powerReceived = Math.min(powerPerOutput, outputNode.powerRequirement - outputNode.powerDistributed);
+                            outputNode.powerDistributed += powerReceived;
+                            
+                            // Reduce effective generation due to distribution
+                            node.effectivePowerGeneration -= powerReceived;
+                        }
+                    });
+                }
+            });
+            
+            // Update satisfied status
+            gameState.nodes.forEach(node => {
+                if (node.powerRequirement > 0) {
+                    node.powerSatisfied = node.powerDistributed >= node.powerRequirement;
+                    node.effectivePowerConsumption = Math.min(node.powerRequirement, node.powerDistributed);
+                }
+            });
+            
+            // Check for requirement satisfaction
+            gameState.nodes.forEach(node => {
+                if (node.requirements.length > 0) {
+                    // Check for power requirement
+                    if (node.requirements.includes('power') && !node.powerSatisfied) {
+                        node.reqSatisfied = false;
+                        return;
+                    }
+                    
+                    // Check for engines requirement
+                    if (node.requirements.includes('engines')) {
+                        const hasEngineInput = node.inputs.some(inputId => {
+                            const inputNode = gameState.nodes.find(n => n.id === inputId);
+                            if (!inputNode) return false;
+                            const inputRoomType = roomTypes.find(r => r.id === inputNode.type);
+                            return inputRoomType && inputRoomType.id.includes('engine');
+                        });
+                        
+                        if (!hasEngineInput) {
+                            node.reqSatisfied = false;
+                            return;
+                        }
+                    }
+                    
+                    // Add checks for other requirement types as needed
+                    
+                    node.reqSatisfied = true;
+                } else {
+                    node.reqSatisfied = true;
+                }
+            });
+            
+            // Check if any rooms have unsatisfied requirements and show notification
+            const unsatisfiedRooms = gameState.nodes.filter(node => !node.powerSatisfied || !node.reqSatisfied);
+            if (unsatisfiedRooms.length > 0) {
+                const roomNames = unsatisfiedRooms.map(node => node.name).join(', ');
+                const message = `The following rooms have unsatisfied requirements: ${roomNames}`;
+                
+                // Only show if there are actually nodes and not during initial loading
+                if (gameState.nodes.length > 0 && !window.initializing) {
+                    showNotification('Warning', message);
+                }
+            }
+        }
+
+        // Update the visual appearance of nodes based on their status
+        function updateNodeVisuals() {
+            gameState.nodes.forEach(node => {
+                const nodeElement = document.getElementById(`node-${node.id}`);
+                if (!nodeElement) return;
+                
+                const infoDiv = nodeElement.querySelector('.node-info');
+                const titleDiv = nodeElement.querySelector('.node-title');
+                
+                // Update title class based on durability
+                titleDiv.classList.remove('warning', 'danger');
+                if (node.durability <= 30) {
+                    titleDiv.classList.add('danger');
+                } else if (node.durability <= 60) {
+                    titleDiv.classList.add('warning');
+                }
+                
+                // Update info text
+                if (node.powerGeneration > 0) {
+                    infoDiv.innerHTML = `
+                        <div>Generating: ${Math.floor(node.effectivePowerGeneration)}/${node.powerGeneration}</div>
+                        <div class="node-power">${node.reqSatisfied ? '✓' : '⚠️'}</div>
+                        <div class="durability-display">Durability: ${Math.floor(node.durability)}%</div>
+                    `;
+                } else {
+                    infoDiv.innerHTML = `
+                        <div>Consuming: ${node.effectivePowerConsumption}/${node.powerRequirement}</div>
+                        <div class="node-power">${node.powerSatisfied && node.reqSatisfied ? '✓' : '⚠️'}</div>
+                        <div class="durability-display">Durability: ${Math.floor(node.durability)}%</div>
+                    `;
+                }
+                
+                // Update border color based on status
+                if (!node.powerSatisfied || !node.reqSatisfied) {
+                    nodeElement.style.borderColor = 'var(--danger-color)';
+                } else {
+                    nodeElement.style.borderColor = 'var(--primary-color)';
+                }
+            });
+            
+            // Update selected node info if one is selected
+            if (gameState.selectedNode) {
+                updateNodeInfoPanel();
+            }
+        }
+
+        // Draw a connection line between nodes
+        function drawConnection(connection) {
+            const fromNode = gameState.nodes.find(n => n.id === connection.fromId);
+            const toNode = gameState.nodes.find(n => n.id === connection.toId);
+            
+            if (!fromNode || !toNode) return;
+            
+            const fromElement = document.getElementById(`node-${fromNode.id}`);
+            const toElement = document.getElementById(`node-${toNode.id}`);
+            
+            if (!fromElement || !toElement) return;
+            
+            // Get center positions of nodes
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            
+            const gridRect = gridElement.getBoundingClientRect();
+            
+            const fromX = fromNode.x + fromRect.width / 2;
+            const fromY = fromNode.y + fromRect.height / 2;
+            const toX = toNode.x + toRect.width / 2;
+            const toY = toNode.y + toRect.height / 2;
+            
+            // Calculate distance and angle
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            // Create the connection line
+            const lineElement = document.createElement('div');
+            lineElement.className = 'connection';
+            lineElement.id = `connection-${connection.id}`;
+            lineElement.style.width = `${distance}px`;
+            lineElement.style.left = `${fromX}px`;
+            lineElement.style.top = `${fromY}px`;
+            lineElement.style.transform = `rotate(${angle}rad)`;
+            
+            // Create the arrow
+            const arrowElement = document.createElement('div');
+            arrowElement.className = 'connection-arrow';
+            arrowElement.id = `arrow-${connection.id}`;
+            arrowElement.style.left = `${toX - 6}px`;
+            arrowElement.style.top = `${toY}px`;
+            arrowElement.style.transform = `rotate(${angle + Math.PI/2}rad)`;
+            
+            gridElement.appendChild(lineElement);
+            gridElement.appendChild(arrowElement);
+        }
+
+        // Redraw all connections
+        function redrawConnections() {
+            // Remove existing connections
+            document.querySelectorAll('.connection, .connection-arrow').forEach(el => el.remove());
+            
+            // Redraw all connections
+            gameState.connections.forEach(connection => {
+                drawConnection(connection);
+            });
+        }
+
+        // Cancel the current connection attempt
+        function cancelConnection() {
+            if (gameState.connectionStartNode) {
+                document.getElementById(`node-${gameState.connectionStartNode.id}`).classList.remove('selected');
+            }
+            
+            gameState.isConnecting = false;
+            gameState.connectionStartNode = null;
+        }
+
+        // Handle mouse down on a node (for dragging)
+        function handleNodeMouseDown(event, node) {
+            if (gameState.isConnecting) {
+                finishConnection(node);
+                return;
+            }
+            
+            if (gameState.deleteMode) {
+                deleteNode(node.id);
+                return;
+            }
+            
+            // Select the node and show its details
+            selectNode(node);
+            
+            // Start dragging
+            gameState.draggedNode = node;
+            gameState.dragOffsetX = event.clientX - node.x * gameState.gridScale;
+            gameState.dragOffsetY = event.clientY - node.y * gameState.gridScale;
+            
+            // Add global mouse move and mouse up handlers
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            
+            event.preventDefault();
+        }
+
+        // Handle touch start on a node (for mobile)
+        function handleNodeTouchStart(event, node) {
+            if (gameState.isConnecting) {
+                finishConnection(node);
+                return;
+            }
+            
+            if (gameState.deleteMode) {
+                deleteNode(node.id);
+                return;
+            }
+            
+            // Select the node and show its details
+            selectNode(node);
+            
+            // Start dragging
+            gameState.draggedNode = node;
+            
+            const touch = event.touches[0];
+            gameState.dragOffsetX = touch.clientX - node.x * gameState.gridScale;
+            gameState.dragOffsetY = touch.clientY - node.y * gameState.gridScale;
+            
+            // Add global touch move and touch end handlers
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+            
+            event.preventDefault();
+        }
+
+        // Handle mouse move for node dragging or panning
+        function handleMouseMove(event) {
+            if (gameState.draggedNode) {
+                // Update node position
+                const newX = (event.clientX - gameState.dragOffsetX) / gameState.gridScale;
+                const newY = (event.clientY - gameState.dragOffsetY) / gameState.gridScale;
+                
+                updateNodePosition(gameState.draggedNode, newX, newY);
+            } else if (gameState.isPanning) {
+                // Pan the grid
+                const dx = event.clientX - gameState.startPanX;
+                const dy = event.clientY - gameState.startPanY;
+                
+                gameState.gridOffsetX += dx;
+                gameState.gridOffsetY += dy;
+                
+                updateGridTransform();
+                
+                gameState.startPanX = event.clientX;
+                gameState.startPanY = event.clientY;
+            }
+        }
+
+        // Handle touch move for node dragging or panning (mobile)
+        function handleTouchMove(event) {
+            const touch = event.touches[0];
+            
+            if (gameState.draggedNode) {
+                // Update node position
+                const newX = (touch.clientX - gameState.dragOffsetX) / gameState.gridScale;
+                const newY = (touch.clientY - gameState.dragOffsetY) / gameState.gridScale;
+                
+                updateNodePosition(gameState.draggedNode, newX, newY);
+                event.preventDefault();
+            } else if (gameState.isPanning) {
+                // Pan the grid
+                const dx = touch.clientX - gameState.startPanX;
+                const dy = touch.clientY - gameState.startPanY;
+                
+                gameState.gridOffsetX += dx;
+                gameState.gridOffsetY += dy;
+                
+                updateGridTransform();
+                
+                gameState.startPanX = touch.clientX;
+                gameState.startPanY = touch.clientY;
+                event.preventDefault();
+            }
+        }
+
+        // Handle mouse up event
+        function handleMouseUp() {
+            // Stop dragging or panning
+            gameState.draggedNode = null;
+            gameState.isPanning = false;
+            
+            // Remove the event listeners
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        // Handle touch end event (mobile)
+        function handleTouchEnd() {
+            // Stop dragging or panning
+            gameState.draggedNode = null;
+            gameState.isPanning = false;
+            
+            // Remove the event listeners
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        // Update a node's position
+        function updateNodePosition(node, x, y) {
+            node.x = x;
+            node.y = y;
+            
+            const nodeElement = document.getElementById(`node-${node.id}`);
+            if (nodeElement) {
+                nodeElement.style.left = `${x}px`;
+                nodeElement.style.top = `${y}px`;
+            }
+            
+            redrawConnections();
+        }
+
+        // Handle grid mouse down for panning and placing nodes
+        function handleGridMouseDown(event) {
+            // Ignore if clicked on a node or connection
+            if (event.target.closest('.node') || 
+                event.target.closest('.connection') || 
+                event.target.closest('.connection-arrow')) {
+                return;
+            }
+            
+            const gridRect = gridElement.getBoundingClientRect();
+            const x = (event.clientX - gridRect.left - gameState.gridOffsetX) / gameState.gridScale;
+            const y = (event.clientY - gridRect.top - gameState.gridOffsetY) / gameState.gridScale;
+            
+            if (gameState.selectedRoomType) {
+                // Create a new node
+                createNode(x, y);
+                gameState.selectedRoomType = null;
+                document.querySelectorAll('.room-item').forEach(el => {
+                    el.style.backgroundColor = '';
+                });
+            } else if (gameState.isConnecting) {
+                // Cancel connection attempt
+                cancelConnection();
+            } else {
+                // Start panning
+                gameState.isPanning = true;
+                gameState.startPanX = event.clientX;
+                gameState.startPanY = event.clientY;
+                
+                // Add global mouse move and mouse up handlers
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            }
+        }
+
+        // Handle grid touch start for panning and placing nodes (mobile)
+        function handleGridTouchStart(event) {
+            // Ignore if touched on a node or connection
+            if (event.target.closest('.node') || 
+                event.target.closest('.connection') || 
+                event.target.closest('.connection-arrow')) {
+                return;
+            }
+            
+            const touch = event.touches[0];
+            const gridRect = gridElement.getBoundingClientRect();
+            const x = (touch.clientX - gridRect.left - gameState.gridOffsetX) / gameState.gridScale;
+            const y = (touch.clientY - gridRect.top - gameState.gridOffsetY) / gameState.gridScale;
+            
+            if (gameState.selectedRoomType) {
+                // Create a new node
+                createNode(x, y);
+                gameState.selectedRoomType = null;
+                document.querySelectorAll('.room-item').forEach(el => {
+                    el.style.backgroundColor = '';
+                });
+            } else if (gameState.isConnecting) {
+                // Cancel connection attempt
+                cancelConnection();
+            } else {
+                // Start panning
+                gameState.isPanning = true;
+                gameState.startPanX = touch.clientX;
+                gameState.startPanY = touch.clientY;
+                
+                // Add global touch move and touch end handlers
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+            }
+        }
+
+        // Zoom the grid
+        function zoomGrid(factor) {
+            const prevScale = gameState.gridScale;
+            gameState.gridScale *= factor;
+            
+            // Limit the zoom scale
+            gameState.gridScale = Math.max(0.2, Math.min(2, gameState.gridScale));
+            
+            // Adjust the offset to maintain the center point
+            const gridRect = gridElement.getBoundingClientRect();
+            const centerX = gridRect.width / 2;
+            const centerY = gridRect.height / 2;
+            
+            const scaleFactor = gameState.gridScale / prevScale;
+            
+            gameState.gridOffsetX = centerX - (centerX - gameState.gridOffsetX) * scaleFactor;
+            gameState.gridOffsetY = centerY - (centerY - gameState.gridOffsetY) * scaleFactor;
+            
+            updateGridTransform();
+            redrawConnections();
+        }
+
+        // Update the grid transform
+        function updateGridTransform() {
+            gridElement.style.transform = `translate(${gameState.gridOffsetX}px, ${gameState.gridOffsetY}px) scale(${gameState.gridScale})`;
+        }
+
+        // Center the grid view
+        function centerGridView() {
+            const gridRect = gridElement.getBoundingClientRect();
+            gameState.gridOffsetX = gridRect.width / 2 - 1500;
+            gameState.gridOffsetY = gridRect.height / 2 - 1500;
+            gameState.gridScale = 1;
+            
+            updateGridTransform();
+        }
+
+        // Select a node and show its details
+        function selectNode(node) {
+            // Deselect previous node if any
+            if (gameState.selectedNode) {
+                const prevElement = document.getElementById(`node-${gameState.selectedNode.id}`);
+                if (prevElement) {
+                    prevElement.classList.remove('selected');
+                }
+            }
+            
+            gameState.selectedNode = node;
+            
+            const nodeElement = document.getElementById(`node-${node.id}`);
+            if (nodeElement) {
+                nodeElement.classList.add('selected');
+            }
+            
+            updateNodeInfoPanel();
+        }
+
+        // Update the node info panel with selected node details
+        function updateNodeInfoPanel() {
+            if (!gameState.selectedNode) {
+                noSelection.style.display = 'block';
+                selectionDetails.style.display = 'none';
+                return;
+            }
+            
+            noSelection.style.display = 'none';
+            selectionDetails.style.display = 'block';
+            
+            const node = gameState.selectedNode;
+            const roomType = roomTypes.find(r => r.id === node.type);
+            
+            document.getElementById('detail-type').textContent = node.name;
+            document.getElementById('detail-universe').textContent = roomType.universe.replace('-', ' ');
+            document.getElementById('detail-power-gen').textContent = node.powerGeneration > 0 ? `${node.effectivePowerGeneration}/${node.powerGeneration}` : '0';
+            document.getElementById('detail-power-req').textContent = node.powerRequirement > 0 ? `${node.powerRequirement}` : '0';
+            document.getElementById('detail-current-power').textContent = node.powerSatisfied ? 'Satisfied' : `Needs more power`;
+            
+            // Show requirements
+            let requirementsText = node.requirements.length > 0 ? 
+                node.requirements.join(', ') : 'None';
+            document.getElementById('detail-requirements').textContent = requirementsText;
+            
+            // Show connections
+            let connectionsText = '';
+            if (node.outputs.length > 0) {
+                connectionsText += 'Outputs: ';
+                node.outputs.forEach((outputId, index) => {
+                    const outputNode = gameState.nodes.find(n => n.id === outputId);
+                    if (outputNode) {
+                        connectionsText += outputNode.name;
+                        if (index < node.outputs.length - 1) {
+                            connectionsText += ', ';
+                        }
+                    }
+                });
+            }
+            
+            if (node.inputs.length > 0) {
+                if (connectionsText) connectionsText += ' | ';
+                connectionsText += 'Inputs: ';
+                node.inputs.forEach((inputId, index) => {
+                    const inputNode = gameState.nodes.find(n => n.id === inputId);
+                    if (inputNode) {
+                        connectionsText += inputNode.name;
+                        if (index < node.inputs.length - 1) {
+                            connectionsText += ', ';
+                        }
+                    }
+                });
+            }
+            
+            if (!connectionsText) connectionsText = 'None';
+            document.getElementById('detail-connections').textContent = connectionsText;
+        }
+
+        // Show the ship status modal with detailed information
+        function showShipStatus() {
+            const statusContent = document.getElementById('status-content');
+            
+            let totalPower = 0;
+            let usedPower = 0;
+            let unsatisfiedRooms = 0;
+            
+            gameState.nodes.forEach(node => {
+                if (node.effectivePowerGeneration > 0) {
+                    totalPower += node.effectivePowerGeneration;
+                }
+                if (node.effectivePowerConsumption > 0 && node.powerSatisfied) {
+                    usedPower += node.effectivePowerConsumption;
+                }
+                if (!node.powerSatisfied || !node.reqSatisfied) {
+                    unsatisfiedRooms++;
+                }
+            });
+            
+            const roomsByUniverse = {};
+            gameState.nodes.forEach(node => {
+                if (!roomsByUniverse[node.universe]) {
+                    roomsByUniverse[node.universe] = 0;
+                }
+                roomsByUniverse[node.universe]++;
+            });
+            
+            let universeBreakdown = '';
+            for (const [universe, count] of Object.entries(roomsByUniverse)) {
+                universeBreakdown += `<li>${universe.replace('-', ' ')}: ${count} room(s)</li>`;
+            }
+            
+            statusContent.innerHTML = `
+                <div>
+                    <h3>Power Status</h3>
+                    <p>Total Power Generation: ${Math.floor(totalPower)}</p>
+                    <p>Power Consumption: ${Math.floor(usedPower)}</p>
+                    <p>Available Power: ${Math.floor(totalPower - usedPower)}</p>
+                </div>
+                <div>
+                    <h3>Ship Composition</h3>
+                    <p>Total Rooms: ${gameState.nodes.length}</p>
+                    <p>Rooms with Issues: ${unsatisfiedRooms}</p>
+                    <h4>Rooms by Universe:</h4>
+                    <ul>${universeBreakdown}</ul>
+                </div>
+                <div>
+                    <h3>Resources</h3>
+                    <p>Credits: ${gameState.credits.toLocaleString()}</p>
+                </div>
+            `;
+            
+            statusModal.style.display = 'flex';
+        }
+
+        // Show a notification message
+        function showNotification(title, message) {
+            const modal = document.getElementById('notification-modal');
+            const titleEl = document.getElementById('notification-title');
+            const contentEl = document.getElementById('notification-content');
+            
+            titleEl.textContent = title;
+            contentEl.textContent = message;
+            
+            modal.classList.add('show');
+            
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                modal.classList.remove('show');
+            }, 4000);
+        }
+        
+        // Show the connections modal
+        function showConnectionsModal(node) {
+            const connectionsModal = document.getElementById('connections-modal');
+            const connectionsContent = document.getElementById('connections-content');
+            
+            // Gather connections information
+            let content = `<h3>${node.name} Connections</h3>`;
+            
+            // Display outputs
+            if (node.outputs.length > 0) {
+                content += '<h4>Outputs:</h4>';
+                node.outputs.forEach(outputId => {
+                    const outputNode = gameState.nodes.find(n => n.id === outputId);
+                    if (outputNode) {
+                        const connectionId = gameState.connections.find(
+                            conn => conn.fromId === node.id && conn.toId === outputId
+                        )?.id;
+                        
+                        content += `
+                            <div class="connection-item">
+                                <span>${outputNode.name}</span>
+                                <span class="unlink-btn" data-connection-id="${connectionId}">✕</span>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                content += '<p>No output connections.</p>';
+            }
+            
+            // Display inputs
+            if (node.inputs.length > 0) {
+                content += '<h4>Inputs:</h4>';
+                node.inputs.forEach(inputId => {
+                    const inputNode = gameState.nodes.find(n => n.id === inputId);
+                    if (inputNode) {
+                        const connectionId = gameState.connections.find(
+                            conn => conn.fromId === inputId && conn.toId === node.id
+                        )?.id;
+                        
+                        content += `
+                            <div class="connection-item">
+                                <span>${inputNode.name}</span>
+                                <span class="unlink-btn" data-connection-id="${connectionId}">✕</span>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                content += '<p>No input connections.</p>';
+            }
+            
+            connectionsContent.innerHTML = content;
+            
+            // Add event listeners to unlink buttons
+            connectionsContent.querySelectorAll('.unlink-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const connectionId = parseInt(btn.dataset.connectionId);
+                    removeConnection(connectionId);
+                    showConnectionsModal(node); // Refresh the modal
+                });
+            });
+            
+            // Show the modal
+            connectionsModal.style.display = 'flex';
+        }
+        
+        // Run jobs for specified number of days
+        function runJobs() {
+            const daysInput = document.getElementById('job-days');
+            const days = parseInt(daysInput.value);
+            
+            if (isNaN(days) || days < 1 || days > 30) {
+                showNotification('Invalid Input', 'Please enter a number between 1 and 30 days.');
+                return;
+            }
+            
+            // Check if ship has any functional rooms
+            if (gameState.nodes.length === 0) {
+                showNotification('Error', 'You need to build some rooms first!');
+                return;
+            }
+            
+            // Calculate ship efficiency score
+            let totalPower = 0;
+            let usedPower = 0;
+            let unsatisfiedRooms = 0;
+            let totalRooms = gameState.nodes.length;
+            
+            gameState.nodes.forEach(node => {
+                if (node.effectivePowerGeneration > 0) {
+                    totalPower += node.effectivePowerGeneration;
+                }
+                if (node.effectivePowerConsumption > 0 && node.powerSatisfied) {
+                    usedPower += node.effectivePowerConsumption;
+                }
+                if (!node.powerSatisfied || !node.reqSatisfied) {
+                    unsatisfiedRooms++;
+                }
+            });
+            
+            // Base income per day
+            const baseIncome = 100;
+            
+            // Efficiency multiplier (higher is better)
+            let efficiencyMultiplier = 1.0;
+            
+            // More rooms = more income
+            efficiencyMultiplier += totalRooms * 0.1;
+            
+            // Unsatisfied rooms reduce efficiency
+            efficiencyMultiplier -= unsatisfiedRooms * 0.2;
+            
+            // Surplus power increases efficiency
+            const surplusPower = totalPower - usedPower;
+            if (surplusPower > 0) {
+                efficiencyMultiplier += Math.min(1.0, surplusPower / 500);
+            }
+            
+            // Calculate total income
+            let totalIncome = Math.max(0, Math.floor(baseIncome * efficiencyMultiplier * days));
+            
+            // Update room durability
+            const roomsToDelete = [];
+            
+            gameState.nodes.forEach(node => {
+                // Base durability reduction per day (3-7%)
+                const baseDurabilityLoss = 3 + Math.random() * 4;
+                
+                // Additional reduction based on requirements not being met
+                let durabilityLoss = baseDurabilityLoss;
+                
+                if (!node.powerSatisfied || !node.reqSatisfied) {
+                    durabilityLoss *= 1.5; // 50% more wear if requirements not met
+                }
+                
+                // Cap at 10% per day as requested
+                durabilityLoss = Math.min(10, durabilityLoss);
+                
+                // Apply durability loss for all days
+                node.durability -= durabilityLoss * days;
+                
+                // Check if room needs to be scrapped
+                if (node.durability <= 0) {
+                    roomsToDelete.push(node.id);
+                }
+            });
+            
+            // Remove rooms with 0 durability
+            roomsToDelete.forEach(nodeId => {
+                deleteNode(nodeId);
+            });
+            
+            // Add income to credits
+            gameState.credits += totalIncome;
+            
+            // Update displays
+            updateCreditsDisplay();
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+            
+            // Show summary
+            showNotification('Job Complete', 
+                `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
+        }
+        
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Grid events
+            gridElement.addEventListener('mousedown', handleGridMouseDown);
+            gridElement.addEventListener('touchstart', handleGridTouchStart, { passive: false });
+            
+            // Zoom controls
+            zoomInBtn.addEventListener('click', () => zoomGrid(1.2));
+            zoomOutBtn.addEventListener('click', () => zoomGrid(0.8));
+            resetViewBtn.addEventListener('click', centerGridView);
+            
+            // Mode buttons
+            deleteBtn.addEventListener('click', () => {
+                gameState.deleteMode = !gameState.deleteMode;
+                gameState.connectMode = false;
+                gameState.selectedRoomType = null;
+                
+                deleteBtn.style.backgroundColor = gameState.deleteMode ? 'var(--danger-color)' : '';
+                connectBtn.style.backgroundColor = '';
+                
+                document.querySelectorAll('.room-item').forEach(el => {
+                    el.style.backgroundColor = '';
+                });
+                
+                if (gameState.deleteMode) {
+                    showNotification('Delete Mode', 'Click on rooms to delete them. Click the delete button again to exit this mode.');
+                }
+            });
+            
+            connectBtn.addEventListener('click', () => {
+                gameState.connectMode = !gameState.connectMode;
+                gameState.deleteMode = false;
+                gameState.selectedRoomType = null;
+                
+                connectBtn.style.backgroundColor = gameState.connectMode ? 'var(--highlight-color)' : '';
+                deleteBtn.style.backgroundColor = '';
+                
+                document.querySelectorAll('.room-item').forEach(el => {
+                    el.style.backgroundColor = '';
+                });
+                
+                if (gameState.connectMode) {
+                    showNotification('Connect Mode', 'Click on a source room, then a target room to create a connection. Click the connect button again to exit this mode.');
+                }
+            });
+            
+            // Search and filter events
+            searchBox.addEventListener('input', (e) => {
+                gameState.searchTerm = e.target.value;
+                renderRoomList();
+            });
+            
+            universeFilter.addEventListener('click', (e) => {
+                if (e.target.classList.contains('universe-btn')) {
+                    document.querySelectorAll('.universe-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    e.target.classList.add('active');
+                    gameState.universeFilter = e.target.dataset.universe;
+                    renderRoomList();
+                }
+            });
+            
+            // Modal events
+            closeStatusBtn.addEventListener('click', () => {
+                statusModal.style.display = 'none';
+            });
+            
+            document.querySelector('#status-modal .close-btn').addEventListener('click', () => {
+                statusModal.style.display = 'none';
+            });
+            
+            document.querySelector('#close-connections').addEventListener('click', () => {
+                document.getElementById('connections-modal').style.display = 'none';
+            });
+            
+            document.querySelector('#connections-modal .close-btn').addEventListener('click', () => {
+                document.getElementById('connections-modal').style.display = 'none';
+            });
+            
+            // Notification close button
+            document.querySelector('.notification-close').addEventListener('click', () => {
+                document.getElementById('notification-modal').classList.remove('show');
+            });
+            
+            // Run jobs button
+            document.getElementById('run-job-btn').addEventListener('click', runJobs);
+            
+            // Add global event listener to show status on 's' key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 's' || e.key === 'S') {
+                    showShipStatus();
+                }
+            });
+            
+            // Add header click event to show status
+            document.querySelector('header h1').addEventListener('click', showShipStatus);
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
