@@ -367,6 +367,10 @@
                 border-top: 2px solid var(--primary-color);
             }
             
+            /* .controls {
+                bottom: 270px;
+            } */
+
             .controls {
         position: fixed; /* Change to fixed position */
         bottom: 20px; /* Position it at the bottom */
@@ -1121,23 +1125,60 @@
             nodeElement.addEventListener('touchstart', (e) => handleNodeTouchStart(e, node), { passive: false });
             
             // Add event listeners for node buttons
+            // const connectBtn = nodeElement.querySelector('.connect-btn');
+            // connectBtn.addEventListener('click', (e) => {
+            //     e.stopPropagation();
+            //     startConnection(node);
+            // });
+            
+            // const connectionsBtn = nodeElement.querySelector('.connections-btn');
+            // connectionsBtn.addEventListener('click', (e) => {
+            //     e.stopPropagation();
+            //     showConnectionsModal(node);
+            // });
+            
+            // const deleteBtn = nodeElement.querySelector('.delete-btn');
+            // deleteBtn.addEventListener('click', (e) => {
+            //     e.stopPropagation();
+            //     deleteNode(node.id);
+            // });
+
             const connectBtn = nodeElement.querySelector('.connect-btn');
-            connectBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                startConnection(node);
-            });
-            
-            const connectionsBtn = nodeElement.querySelector('.connections-btn');
-            connectionsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showConnectionsModal(node);
-            });
-            
-            const deleteBtn = nodeElement.querySelector('.delete-btn');
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteNode(node.id);
-            });
+connectBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    startConnection(node);
+});
+// Add touch event for mobile
+connectBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startConnection(node);
+}, false);
+
+const connectionsBtn = nodeElement.querySelector('.connections-btn');
+connectionsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showConnectionsModal(node);
+});
+// Add touch event for mobile
+connectionsBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    showConnectionsModal(node);
+}, false);
+
+const deleteBtn = nodeElement.querySelector('.delete-btn');
+deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteNode(node.id);
+});
+// Add touch event for mobile
+deleteBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    deleteNode(node.id);
+}, false);
+
         }
 
         // Delete a node
