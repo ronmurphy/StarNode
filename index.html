@@ -662,6 +662,96 @@
                 flex-wrap: wrap;
             }
         }
+
+        .faction-intro {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.faction-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.faction-option {
+    background-color: rgba(52, 152, 219, 0.1);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.faction-option:hover {
+    background-color: rgba(52, 152, 219, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.faction-option.selected {
+    border-color: var(--highlight-color);
+    background-color: rgba(155, 89, 182, 0.2);
+    box-shadow: 0 0 15px var(--highlight-color);
+}
+
+.faction-details {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.faction-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.faction-info {
+    flex: 1;
+}
+
+.faction-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.faction-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Restricted room styles */
+.room-item.restricted {
+    opacity: 0.5;
+    position: relative;
+}
+
+.room-item.restricted::after {
+    content: 'RESTRICTED';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    background-color: rgba(231, 76, 60, 0.8);
+    color: white;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .faction-selection {
+        grid-template-columns: 1fr;
+    }
+}
+
     </style>
 </head>
 
@@ -874,7 +964,118 @@
         </div>
     </div>
 
+    <!-- Faction Selection Modal -->
+<div class="modal" id="faction-modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2>Choose Your Ship Framework</h2>
+        </div>
+        <div class="modal-body">
+            <p class="faction-intro">Select a faction to determine your starting credits and design constraints:</p>
+            
+            <div class="faction-selection">
+                <div class="faction-option" data-faction="federation">
+                    <h3>Federation Starship</h3>
+                    <div class="faction-details">
+                        <img src="https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/federation.png" alt="Federation" class="faction-image">
+                        <div class="faction-info">
+                            <p><strong>Starting Bonus:</strong> +2,000 credits</p>
+                            <p><strong>Design Freedom:</strong> High</p>
+                            <p><strong>Description:</strong> Balanced design with varied room options. Federation ships can accommodate a wide range of technologies and configurations.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faction-option" data-faction="empire">
+                    <h3>Imperial Star Destroyer</h3>
+                    <div class="faction-details">
+                        <img src="https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/empire.png" alt="Empire" class="faction-image">
+                        <div class="faction-info">
+                            <p><strong>Starting Bonus:</strong> +3,000 credits</p>
+                            <p><strong>Design Freedom:</strong> Medium</p>
+                            <p><strong>Description:</strong> Powerful but rigid. Imperial ships require more tactical rooms and power generation, but provide substantial financial backing.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faction-option" data-faction="harkonnen">
+                    <h3>House Harkonnen Vessel</h3>
+                    <div class="faction-details">
+                        <img src="https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/harkonnen.png" alt="Harkonnen" class="faction-image">
+                        <div class="faction-info">
+                            <p><strong>Starting Bonus:</strong> +5,000 credits</p>
+                            <p><strong>Design Freedom:</strong> Low</p>
+                            <p><strong>Description:</strong> Wealthy but demanding. Harkonnen ships receive substantial funding but have strict requirements for command, power, and tactical systems.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faction-option" data-faction="independent">
+                    <h3>Independent Trader</h3>
+                    <div class="faction-details">
+                        <img src="https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/independent.png" alt="Independent" class="faction-image">
+                        <div class="faction-info">
+                            <p><strong>Starting Bonus:</strong> +0 credits</p>
+                            <p><strong>Design Freedom:</strong> Very High</p>
+                            <p><strong>Description:</strong> Complete design freedom but limited resources. Independent traders can use any technology but start with minimal funding.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script>
+
+const factions = {
+    federation: {
+        name: "Federation Starship",
+        creditBonus: 2000,
+        restrictedRooms: [], // No restrictions
+        requiredRooms: {
+            power: 1,
+            engines: 1,
+            command: 1
+        },
+        incomeMultiplier: 1.0
+    },
+    empire: {
+        name: "Imperial Star Destroyer",
+        creditBonus: 3000,
+        restrictedRooms: ['suspensor-drive', 'holtzman-generator', 'navigation-chamber'], // No Dune tech
+        requiredRooms: {
+            power: 2,
+            engines: 1,
+            command: 1,
+            tactical: 2
+        },
+        incomeMultiplier: 1.2
+    },
+    harkonnen: {
+        name: "House Harkonnen Vessel",
+        creditBonus: 5000,
+        restrictedRooms: ['warp-core', 'federation-bridge', 'impulse-engine', 'phaser-bank', 'shield-generator'], // No Federation tech
+        requiredRooms: {
+            power: 3,
+            engines: 2,
+            command: 2,
+            tactical: 3
+        },
+        incomeMultiplier: 1.5
+    },
+    independent: {
+        name: "Independent Trader",
+        creditBonus: 0,
+        restrictedRooms: [], // No restrictions
+        requiredRooms: {
+            power: 1,
+            engines: 1
+        },
+        incomeMultiplier: 0.8
+    }
+};
+
         // Game state
         const gameState = {
             credits: 10000,
@@ -897,8 +1098,12 @@
             universeFilter: 'all',
             roomTypeFilter: 'all',
             searchTerm: '',
-            lastConnectionId: 0
+            lastConnectionId: 0,
+            selectedFaction : null,
+factionRequirementsMet : false,
         };
+
+
 
         // Room types database with universe categorization
         const roomTypes = [
@@ -1257,6 +1462,9 @@
                 window.initializing = false;
                 showNotification('Welcome to StarNode', 'Build your ship by selecting rooms from the right panel and placing them on the grid. Connect rooms to share resources.');
             }, 1000);
+
+                // Show faction selection after a brief delay
+    setTimeout(showFactionSelection, 500);
         }
 
         // Update the credits display
@@ -1281,16 +1489,203 @@
             powerDisplay.textContent = `${totalPower - usedPower}/${totalPower}`;
         }
 
+       // Show faction selection modal
+function showFactionSelection() {
+    const factionModal = document.getElementById('faction-modal');
+    factionModal.style.display = 'flex';
+    
+    // Add click event listeners to faction options
+    document.querySelectorAll('.faction-option').forEach(option => {
+        option.addEventListener('click', () => {
+            // Remove selected class from all options
+            document.querySelectorAll('.faction-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            
+            // Store selected faction
+            const factionId = option.dataset.faction;
+            
+            // Add continue button if not already there
+            if (!document.getElementById('continue-btn')) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'faction-actions';
+                actionsDiv.innerHTML = `<button class="btn" id="continue-btn">Begin Construction</button>`;
+                document.querySelector('#faction-modal .modal-body').appendChild(actionsDiv);
+                
+                // Add event listener to continue button
+                document.getElementById('continue-btn').addEventListener('click', () => {
+                    selectFaction(factionId);
+                    factionModal.style.display = 'none';
+                });
+            }
+        });
+    });
+}
+
+// Select faction and apply bonuses
+function selectFaction(factionId) {
+    // Set selected faction
+    gameState.selectedFaction = factionId;
+    const faction = factions[factionId];
+    
+    // Apply credit bonus
+    gameState.credits += faction.creditBonus;
+    updateCreditsDisplay();
+    
+    // Show notification about faction selection
+    showNotification('Faction Selected', `You've chosen a ${faction.name}. Your starting credits have been adjusted to ${gameState.credits}.`);
+    
+    // Update room list to show restrictions
+    renderRoomList();
+    
+    // Add faction banner to header
+    const header = document.querySelector('header');
+    const banner = document.createElement('div');
+    banner.className = 'faction-banner';
+    banner.innerHTML = `<span>${faction.name}</span>`;
+    header.appendChild(banner);
+}
+
+// Update renderRoomList to handle restricted rooms
+const originalRenderRoomList = renderRoomList;
+renderRoomList = function() {
+    originalRenderRoomList();
+    
+    // If a faction is selected, apply restrictions
+    if (gameState.selectedFaction) {
+        const faction = factions[gameState.selectedFaction];
+        
+        // Mark restricted rooms
+        faction.restrictedRooms.forEach(roomId => {
+            const roomElement = document.querySelector(`.room-item[data-room-id="${roomId}"]`);
+            if (roomElement) {
+                roomElement.classList.add('restricted');
+                
+                // Remove click event listener
+                const newElement = roomElement.cloneNode(true);
+                roomElement.parentNode.replaceChild(newElement, roomElement);
+                
+                // Add tooltip
+                newElement.title = `This room is restricted by your faction: ${faction.name}`;
+            }
+        });
+    }
+};
+
+// Update runJobs to check faction requirements and apply income multiplier
+const originalRunJobs = runJobs;
+runJobs = function() {
+    // Check if faction requirements are met
+    if (gameState.selectedFaction) {
+        checkFactionRequirements();
+        
+        if (!gameState.factionRequirementsMet) {
+            showNotification('Cannot Run Jobs', `Your ship does not meet the minimum requirements for a ${factions[gameState.selectedFaction].name}. Check the diagnostics for details.`);
+            return;
+        }
+    }
+    
+    // Call original function
+    originalRunJobs();
+    
+    // Apply faction income multiplier
+    if (gameState.selectedFaction) {
+        const multiplier = factions[gameState.selectedFaction].incomeMultiplier;
+        const additionalIncome = Math.floor(gameState.lastJobIncome * (multiplier - 1));
+        
+        if (additionalIncome !== 0) {
+            gameState.credits += additionalIncome;
+            updateCreditsDisplay();
+            
+            if (additionalIncome > 0) {
+                showNotification('Faction Bonus', `Your ${factions[gameState.selectedFaction].name} earned a bonus of ${additionalIncome} credits.`);
+            } else {
+                showNotification('Independent Penalty', `Your Independent Trader status resulted in a penalty of ${Math.abs(additionalIncome)} credits.`);
+            }
+        }
+    }
+};
+
+// Modify the showDiagnostics function to show faction requirements
+const originalShowDiagnostics = showDiagnostics;
+showDiagnostics = function() {
+    originalShowDiagnostics();
+    
+    // Add faction requirements to diagnostics if a faction is selected
+    if (gameState.selectedFaction) {
+        const faction = factions[gameState.selectedFaction];
+        const statusContent = document.getElementById('status-content');
+        
+        // Create faction requirements section
+        let requirementsHTML = `
+            <div>
+                <h3>Faction Requirements</h3>
+                <p>Your ${faction.name} requires:</p>
+                <ul>
+        `;
+        
+        // Add requirements
+        for (const [type, count] of Object.entries(faction.requiredRooms)) {
+            requirementsHTML += `<li>${count} ${type} room(s)</li>`;
+        }
+        
+        requirementsHTML += `</ul>
+                <p>Status: ${gameState.factionRequirementsMet ? 'Requirements Met ✓' : 'Requirements Not Met ✗'}</p>
+            </div>
+        `;
+        
+        // Append faction requirements to status content
+        statusContent.innerHTML += requirementsHTML;
+    }
+};
+
+// Check if faction requirements are met
+function checkFactionRequirements() {
+    if (!gameState.selectedFaction) {
+        gameState.factionRequirementsMet = true;
+        return;
+    }
+    
+    const faction = factions[gameState.selectedFaction];
+    const requirements = faction.requiredRooms;
+    
+    // Count rooms by type
+    const roomCounts = {
+        power: 0,
+        engines: 0,
+        command: 0,
+        tactical: 0,
+        utility: 0
+    };
+    
+    gameState.nodes.forEach(node => {
+        const roomType = roomTypes.find(r => r.id === node.type);
+        if (roomType && roomType.type) {
+            roomCounts[roomType.type]++;
+        }
+    });
+    
+    // Check if all requirements are met
+    let allRequirementsMet = true;
+    for (const [type, count] of Object.entries(requirements)) {
+        if (roomCounts[type] < count) {
+            allRequirementsMet = false;
+            break;
+        }
+    }
+    
+    gameState.factionRequirementsMet = allRequirementsMet;
+}
+
+
         // Render the room list based on filters
         function renderRoomList() {
             roomListElement.innerHTML = '';
 
-            // const filteredRooms = roomTypes.filter(room => {
-            //     const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
-            //     const matchesSearch = room.name.toLowerCase().includes(gameState.searchTerm.toLowerCase()) ||
-            //         room.description.toLowerCase().includes(gameState.searchTerm.toLowerCase());
-            //     return matchesUniverse && matchesSearch;
-            // });
+
 
             const filteredRooms = roomTypes.filter(room => {
                 const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
@@ -2725,6 +3120,8 @@
             roomsToDelete.forEach(nodeId => {
                 deleteNode(nodeId);
             });
+
+            gameState.lastJobIncome = totalIncome;
 
             // Add income to credits
             gameState.credits += totalIncome;
