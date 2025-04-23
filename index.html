@@ -378,14 +378,14 @@
         }
 
         .sidebar-toggle {
-    display: none;
-    position: absolute;
-    top: 10px;
+    display: none; /* Hidden by default on desktop */
+    position: fixed; /* Fixed position so it stays visible when scrolling */
+    top: 70px; /* Position below header */
     right: 10px;
     width: 40px;
     height: 40px;
-    background-color: var(--panel-color);
-    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    border: 1px solid var(--text-color);
     border-radius: 50%;
     z-index: 20;
     cursor: pointer;
@@ -432,25 +432,22 @@
 /* Update mobile styles */
 @media (max-width: 768px) {
     .sidebar-toggle {
-        display: flex;
+        display: flex; /* Only show on mobile */
     }
     
     .sidebar {
-        position: absolute;
+        position: fixed; /* Changed to fixed */
         right: 0;
         top: 0;
-        height: 100%;
+        bottom: 0;
+        height: 100%; /* Full height */
         width: 250px;
         transition: transform 0.3s ease;
         z-index: 15;
     }
     
     .sidebar.collapsed {
-        transform: translateX(100%);
-    }
-    
-    .controls {
-        bottom: 20px;
+        transform: translateX(100%); /* Move off-screen when collapsed */
     }
 }
 
@@ -2086,19 +2083,21 @@
             zoomOutBtn.addEventListener('click', () => zoomGrid(0.8));
             resetViewBtn.addEventListener('click', centerGridView);
 
-            // Add sidebar toggle for mobile
+// Add sidebar toggle for mobile
 const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebar = document.querySelector('.sidebar');
 
-sidebarToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-    sidebarToggle.classList.toggle('collapsed');
-});
-
-// Default to collapsed sidebar on mobile
-if (window.innerWidth <= 768) {
-    sidebar.classList.add('collapsed');
-    sidebarToggle.classList.add('collapsed');
+if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        sidebarToggle.classList.toggle('collapsed');
+    });
+    
+    // Default to collapsed sidebar on mobile
+    if (window.innerWidth <= 768) {
+        sidebar.classList.add('collapsed');
+        sidebarToggle.classList.add('collapsed');
+    }
 }
             
             // Mode buttons
