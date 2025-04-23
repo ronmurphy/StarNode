@@ -295,6 +295,29 @@
             margin-bottom: 10px;
         }
 
+        .room-type-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .type-btn {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .type-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
         .info-panel {
             margin-top: 20px;
             background-color: rgba(52, 152, 219, 0.1);
@@ -622,6 +645,8 @@
                 <div class="control-btn" id="zoom-in">+</div>
                 <div class="control-btn" id="delete-mode">🗑️</div>
                 <div class="control-btn" id="connect-mode">🔗</div>
+                <div class="control-btn" id="diagnostics-btn" title="Diagnostics">📊</div>
+                <div class="control-btn" id="repair-btn" title="Repair Ship">🔧</div>
             </div>
         </div>
 
@@ -639,6 +664,16 @@
                 <div class="universe-btn" data-universe="babylon-5">Babylon 5</div>
                 <div class="universe-btn" data-universe="dune">Dune</div>
             </div>
+
+            <div class="room-type-filter" id="room-type-filter">
+                <div class="type-btn active" data-type="all">All Types</div>
+                <div class="type-btn" data-type="power">Power</div>
+                <div class="type-btn" data-type="engines">Engines</div>
+                <div class="type-btn" data-type="command">Command</div>
+                <div class="type-btn" data-type="tactical">Tactical</div>
+                <div class="type-btn" data-type="utility">Utility</div>
+            </div>
+
             <div class="room-list" id="room-list">
                 <!-- Room items will be inserted here by JavaScript -->
             </div>
@@ -721,6 +756,23 @@
         </div>
     </div>
 
+    <!-- Repair confirmation modal -->
+    <div class="modal" id="repair-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Repair Ship</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="repair-content">
+                <!-- Repair details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="confirm-repair">Repair</button>
+                <button class="btn" id="cancel-repair">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Game state
         const gameState = {
@@ -742,6 +794,7 @@
             isConnecting: false,
             connectionStartNode: null,
             universeFilter: 'all',
+            roomTypeFilter: 'all',
             searchTerm: '',
             lastConnectionId: 0
         };
@@ -753,6 +806,7 @@
                 id: 'warp-core',
                 name: 'Warp Core',
                 universe: 'star-trek',
+                type: 'power',
                 cost: 1000,
                 powerGeneration: 500,
                 powerRequirement: 0,
@@ -763,6 +817,7 @@
                 id: 'impulse-engine',
                 name: 'Impulse Engine',
                 universe: 'star-trek',
+                type: 'engines',
                 cost: 600,
                 powerGeneration: 0,
                 powerRequirement: 200,
@@ -773,6 +828,7 @@
                 id: 'federation-bridge',
                 name: 'Federation Bridge',
                 universe: 'star-trek',
+                type: 'command',
                 cost: 1200,
                 powerGeneration: 0,
                 powerRequirement: 300,
@@ -783,6 +839,7 @@
                 id: 'phaser-bank',
                 name: 'Phaser Bank',
                 universe: 'star-trek',
+                type: 'tactical',
                 cost: 800,
                 powerGeneration: 0,
                 powerRequirement: 250,
@@ -793,18 +850,43 @@
                 id: 'shield-generator',
                 name: 'Shield Generator',
                 universe: 'star-trek',
+                type: 'tactical',
                 cost: 700,
                 powerGeneration: 0,
                 powerRequirement: 200,
                 requirements: ['power'],
                 description: 'Creates defensive energy shields around the vessel.'
             },
+            {
+                id: 'matter-antimatter-core',
+                name: 'Matter/Antimatter Core',
+                universe: 'star-trek',
+                type: 'power',
+                cost: 1500,
+                powerGeneration: 800,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Advanced Starfleet power source utilizing matter/antimatter reactions. Highly efficient but expensive.'
+            },
+            {
+                id: 'deflector-array',
+                name: 'Deflector Array',
+                universe: 'star-trek',
+                type: 'utility',
+                cost: 650,
+                powerGeneration: 0,
+                powerRequirement: 180,
+                requirements: ['power'],
+                description: 'Projects deflector fields to clear debris from the ships path and can be reconfigured for various tasks.'
+            },
+
 
             // Star Wars Rooms
             {
                 id: 'hypermatter-reactor',
                 name: 'Hypermatter Reactor',
                 universe: 'star-wars',
+                type: 'power',
                 cost: 1200,
                 powerGeneration: 600,
                 powerRequirement: 0,
@@ -815,6 +897,7 @@
                 id: 'ion-engine',
                 name: 'Ion Engine',
                 universe: 'star-wars',
+                type: 'engines',
                 cost: 500,
                 powerGeneration: 0,
                 powerRequirement: 150,
@@ -825,6 +908,7 @@
                 id: 'imperial-bridge',
                 name: 'Imperial Bridge',
                 universe: 'star-wars',
+                type: 'command',
                 cost: 1000,
                 powerGeneration: 0,
                 powerRequirement: 250,
@@ -835,6 +919,7 @@
                 id: 'turbolaser-battery',
                 name: 'Turbolaser Battery',
                 universe: 'star-wars',
+                type: 'tactical',
                 cost: 900,
                 powerGeneration: 0,
                 powerRequirement: 300,
@@ -845,11 +930,34 @@
                 id: 'deflector-shield',
                 name: 'Deflector Shield',
                 universe: 'star-wars',
+                type: 'tactical',
                 cost: 750,
                 powerGeneration: 0,
                 powerRequirement: 220,
                 requirements: ['power'],
                 description: 'Projects energy shields to protect against incoming attacks.'
+            },
+            {
+                id: 'kyber-crystal-matrix',
+                name: 'Kyber Crystal Matrix',
+                universe: 'star-wars',
+                type: 'power',
+                cost: 2000,
+                powerGeneration: 1000,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Rare kyber crystal array that generates massive power. Extremely expensive but powerful.'
+            },
+            {
+                id: 'tractor-beam',
+                name: 'Tractor Beam',
+                universe: 'star-wars',
+                type: 'tactical',
+                cost: 700,
+                powerGeneration: 0,
+                powerRequirement: 200,
+                requirements: ['power'],
+                description: 'Projects gravitational fields to capture or manipulate external objects.'
             },
 
             // Babylon 5 Rooms
@@ -857,6 +965,7 @@
                 id: 'fusion-reactor',
                 name: 'Fusion Reactor',
                 universe: 'babylon-5',
+                type: 'power',
                 cost: 900,
                 powerGeneration: 450,
                 powerRequirement: 0,
@@ -867,6 +976,7 @@
                 id: 'gravimetric-engine',
                 name: 'Gravimetric Engine',
                 universe: 'babylon-5',
+                type: 'engines',
                 cost: 650,
                 powerGeneration: 0,
                 powerRequirement: 180,
@@ -877,6 +987,7 @@
                 id: 'earthforce-cic',
                 name: 'Earthforce CIC',
                 universe: 'babylon-5',
+                type: 'command',
                 cost: 950,
                 powerGeneration: 0,
                 powerRequirement: 230,
@@ -887,11 +998,34 @@
                 id: 'interceptor-grid',
                 name: 'Interceptor Grid',
                 universe: 'babylon-5',
+                type: 'tactical',
                 cost: 700,
                 powerGeneration: 0,
                 powerRequirement: 200,
                 requirements: ['power'],
                 description: 'Defense system that intercepts incoming projectiles.'
+            },
+            {
+                id: 'quantium-40-generator',
+                name: 'Quantium-40 Generator',
+                universe: 'babylon-5',
+                type: 'power',
+                cost: 1400,
+                powerGeneration: 750,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Advanced power system utilizing rare Quantium-40 for enhanced energy generation.'
+            },
+            {
+                id: 'jump-gate-array',
+                name: 'Jump Gate Array',
+                universe: 'babylon-5',
+                type: 'utility',
+                cost: 1200,
+                powerGeneration: 0,
+                powerRequirement: 400,
+                requirements: ['power', 'engines'],
+                description: 'Creates a stabilized vortex into hyperspace, allowing for interstellar travel.'
             },
 
             // Dune Rooms
@@ -899,6 +1033,7 @@
                 id: 'holtzman-generator',
                 name: 'Holtzman Generator',
                 universe: 'dune',
+                type: 'power',
                 cost: 1500,
                 powerGeneration: 700,
                 powerRequirement: 0,
@@ -909,6 +1044,7 @@
                 id: 'suspensor-drive',
                 name: 'Suspensor Drive',
                 universe: 'dune',
+                type: 'engines',
                 cost: 800,
                 powerGeneration: 0,
                 powerRequirement: 220,
@@ -919,6 +1055,7 @@
                 id: 'navigation-chamber',
                 name: 'Navigation Chamber',
                 universe: 'dune',
+                type: 'command',
                 cost: 1300,
                 powerGeneration: 0,
                 powerRequirement: 350,
@@ -929,11 +1066,60 @@
                 id: 'lasgun-array',
                 name: 'Lasgun Array',
                 universe: 'dune',
+                type: 'tactical',
                 cost: 850,
                 powerGeneration: 0,
                 powerRequirement: 270,
                 requirements: ['power'],
                 description: 'Energy weapon system (dangerous when used against shields).'
+            },
+            {
+                id: 'spice-reactor',
+                name: 'Spice Reactor',
+                universe: 'dune',
+                type: 'power',
+                cost: 2500,
+                powerGeneration: 1200,
+                powerRequirement: 0,
+                requirements: [],
+                description: 'Experimental reactor utilizing refined spice for extraordinary power generation. Extremely expensive.'
+            },
+            {
+                id: 'shields-analysis-room',
+                name: 'Shields Analysis Room',
+                universe: 'dune',
+                type: 'utility',
+                cost: 600,
+                powerGeneration: 0,
+                powerRequirement: 150,
+                requirements: ['power'],
+                description: 'Analyzes attack vectors to optimize shield frequencies against both projectile and energy weapons.'
+            },
+
+            // Agnostic rooms - universal for all fandoms
+            {
+                id: 'junction-node',
+                name: 'Junction Node',
+                universe: 'star-trek',
+                type: 'utility',
+                cost: 350,
+                powerGeneration: 0,
+                powerRequirement: 20, // Small power cost to operate
+                requirements: ['power'],
+                description: 'Specialized node with 1 input but 3 outputs. Efficiently splits power between multiple systems.'
+            },
+
+            // Enhanced Junction (Conduit Room)
+            {
+                id: 'power-conduit',
+                name: 'Power Conduit',
+                universe: 'star-trek',
+                type: 'utility',
+                cost: 700,
+                powerGeneration: 0,
+                powerRequirement: 50, // Higher cost to operate
+                requirements: ['power'],
+                description: 'Advanced junction accepting 2 inputs and providing 3 outputs. Combines power sources for efficient distribution.'
             }
         ];
 
@@ -998,11 +1184,19 @@
         function renderRoomList() {
             roomListElement.innerHTML = '';
 
+            // const filteredRooms = roomTypes.filter(room => {
+            //     const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
+            //     const matchesSearch = room.name.toLowerCase().includes(gameState.searchTerm.toLowerCase()) ||
+            //         room.description.toLowerCase().includes(gameState.searchTerm.toLowerCase());
+            //     return matchesUniverse && matchesSearch;
+            // });
+
             const filteredRooms = roomTypes.filter(room => {
                 const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
+                const matchesType = gameState.roomTypeFilter === 'all' || room.type === gameState.roomTypeFilter;
                 const matchesSearch = room.name.toLowerCase().includes(gameState.searchTerm.toLowerCase()) ||
                     room.description.toLowerCase().includes(gameState.searchTerm.toLowerCase());
-                return matchesUniverse && matchesSearch;
+                return matchesUniverse && matchesType && matchesSearch;
             });
 
             filteredRooms.forEach(room => {
@@ -1291,6 +1485,40 @@
                 return;
             }
 
+            // Check for special node types with different connection limits
+            if (sourceNode.type === 'junction-node') {
+                if (sourceNode.outputs.length >= 3) {
+                    showNotification('Warning', 'This Junction Node already has the maximum number of outputs (3).');
+                    cancelConnection();
+                    return;
+                }
+            } else if (sourceNode.type === 'power-conduit') {
+                if (sourceNode.outputs.length >= 3) {
+                    showNotification('Warning', 'This Power Conduit already has the maximum number of outputs (3).');
+                    cancelConnection();
+                    return;
+                }
+            } else if (sourceNode.outputs.length >= 3) {
+                showNotification('Warning', 'This room already has the maximum number of outputs (3).');
+                cancelConnection();
+                return;
+            }
+
+            // Also in finishConnection, add input restriction for Conduit room:
+            if (targetNode.type === 'junction-node' && targetNode.inputs.length >= 1) {
+                showNotification('Warning', 'Junction Node can only have 1 input.');
+                cancelConnection();
+                return;
+            } else if (targetNode.type === 'power-conduit' && targetNode.inputs.length >= 2) {
+                showNotification('Warning', 'Power Conduit can only have 2 inputs.');
+                cancelConnection();
+                return;
+            } else if (targetNode.inputs.length >= 2) {
+                showNotification('Warning', 'Target room already has the maximum number of inputs (2).');
+                cancelConnection();
+                return;
+            }
+
             // Create the connection
             const connectionId = ++gameState.lastConnectionId;
             const connection = {
@@ -1378,6 +1606,24 @@
 
             // Calculate power distribution
             gameState.nodes.forEach(node => {
+                // if (node.effectivePowerGeneration > 0 && node.outputs.length > 0) {
+                //     // This node generates power and has outputs
+                //     const powerPerOutput = node.effectivePowerGeneration / node.outputs.length;
+
+                //     node.outputs.forEach(outputId => {
+                //         const outputNode = gameState.nodes.find(n => n.id === outputId);
+                //         if (outputNode) {
+                //             // Add power to the output node
+                //             const powerReceived = Math.min(powerPerOutput, outputNode.powerRequirement - outputNode.powerDistributed);
+                //             outputNode.powerDistributed += powerReceived;
+
+                //             // Reduce effective generation due to distribution
+                //             node.effectivePowerGeneration -= powerReceived;
+                //         }
+                //     });
+                // }
+
+                // Add special handling for Junction and Conduit in the power distribution section:
                 if (node.effectivePowerGeneration > 0 && node.outputs.length > 0) {
                     // This node generates power and has outputs
                     const powerPerOutput = node.effectivePowerGeneration / node.outputs.length;
@@ -1393,6 +1639,46 @@
                             node.effectivePowerGeneration -= powerReceived;
                         }
                     });
+                } else if (node.type === 'junction-node' && node.inputs.length > 0 && node.outputs.length > 0) {
+                    // Junction node - gets power from input and distributes to outputs
+                    const inputNode = gameState.nodes.find(n => n.id === node.inputs[0]);
+                    if (inputNode && inputNode.effectivePowerGeneration > 0) {
+                        // Get available power from input
+                        const availablePower = Math.min(inputNode.effectivePowerGeneration, 300);
+
+                        // Distribute to outputs
+                        const powerPerOutput = availablePower / node.outputs.length;
+                        node.outputs.forEach(outputId => {
+                            const outputNode = gameState.nodes.find(n => n.id === outputId);
+                            if (outputNode) {
+                                const powerReceived = Math.min(powerPerOutput, outputNode.powerRequirement - outputNode.powerDistributed);
+                                outputNode.powerDistributed += powerReceived;
+                            }
+                        });
+                    }
+                } else if (node.type === 'power-conduit' && node.inputs.length > 0 && node.outputs.length > 0) {
+                    // Conduit node - combines power from inputs and distributes to outputs
+                    let combinedPower = 0;
+
+                    // Get power from each input
+                    node.inputs.forEach(inputId => {
+                        const inputNode = gameState.nodes.find(n => n.id === inputId);
+                        if (inputNode && inputNode.effectivePowerGeneration > 0) {
+                            combinedPower += Math.min(inputNode.effectivePowerGeneration, 300);
+                        }
+                    });
+
+                    // Distribute combined power to outputs
+                    if (combinedPower > 0) {
+                        const powerPerOutput = combinedPower / node.outputs.length;
+                        node.outputs.forEach(outputId => {
+                            const outputNode = gameState.nodes.find(n => n.id === outputId);
+                            if (outputNode) {
+                                const powerReceived = Math.min(powerPerOutput, outputNode.powerRequirement - outputNode.powerDistributed);
+                                outputNode.powerDistributed += powerReceived;
+                            }
+                        });
+                    }
                 }
             });
 
@@ -1920,6 +2206,199 @@
             document.getElementById('detail-connections').textContent = connectionsText;
         }
 
+        // Show diagnostic information
+        function showDiagnostics() {
+            const statusContent = document.getElementById('status-content');
+
+            // Calculate power stats
+            let totalPower = 0;
+            let usedPower = 0;
+            let surplusPower = 0;
+
+            // Room counts
+            let totalRooms = gameState.nodes.length;
+            let powerRooms = 0;
+            let engineRooms = 0;
+            let commandRooms = 0;
+            let tacticalRooms = 0;
+            let utilityRooms = 0;
+
+            // Durability stats
+            let totalDurability = 0;
+            let roomsNeedingRepair = 0;
+
+            // Calculate all stats
+            gameState.nodes.forEach(node => {
+                // Power calculations
+                if (node.effectivePowerGeneration > 0) {
+                    totalPower += node.effectivePowerGeneration;
+                    powerRooms++;
+                }
+                if (node.effectivePowerConsumption > 0) {
+                    usedPower += node.effectivePowerConsumption;
+                }
+
+                // Room type counts
+                const roomType = roomTypes.find(r => r.id === node.type);
+                if (roomType) {
+                    if (roomType.type === 'engines') engineRooms++;
+                    else if (roomType.type === 'command') commandRooms++;
+                    else if (roomType.type === 'tactical') tacticalRooms++;
+                    else if (roomType.type === 'utility') utilityRooms++;
+                }
+
+                // Durability stats
+                totalDurability += node.durability;
+                if (node.durability < 90) roomsNeedingRepair++;
+            });
+
+            // Calculate averages and efficiencies
+            surplusPower = totalPower - usedPower;
+            const avgDurability = totalRooms > 0 ? Math.floor(totalDurability / totalRooms) : 0;
+
+            // Calculate economic projections
+            const baseIncome = 100; // Base income per day
+            let efficiencyMultiplier = 1.0;
+
+            // Factors affecting income
+            efficiencyMultiplier += totalRooms * 0.1; // More rooms = more income
+            efficiencyMultiplier -= (roomsNeedingRepair * 0.05); // Damaged rooms reduce efficiency
+
+            // Surplus power increases efficiency
+            if (surplusPower > 0) {
+                efficiencyMultiplier += Math.min(1.0, surplusPower / 500);
+            }
+
+            // Calculate projected earnings and maintenance
+            const projectedDailyIncome = Math.floor(baseIncome * efficiencyMultiplier);
+            const projectedFiveDayIncome = projectedDailyIncome * 5;
+
+            // Maintenance cost is based on room count and average durability
+            const dailyMaintenanceCost = Math.floor(totalRooms * 10 * (1 + (90 - avgDurability) / 100));
+            const fiveDayMaintenanceCost = dailyMaintenanceCost * 5;
+
+            // Calculate net profit
+            const netProfit = projectedFiveDayIncome - fiveDayMaintenanceCost;
+
+            // Create the diagnostic report
+            statusContent.innerHTML = `
+        <div>
+            <h3>Ship Diagnostics Report</h3>
+            <p>Total Rooms: ${totalRooms}</p>
+            <p>Average Durability: ${avgDurability}%</p>
+            <p>Rooms Needing Repair: ${roomsNeedingRepair}</p>
+        </div>
+        <div>
+            <h3>Power Systems</h3>
+            <p>Total Power Generation: ${Math.floor(totalPower)}</p>
+            <p>Power Consumption: ${Math.floor(usedPower)}</p>
+            <p>Surplus Power: ${Math.floor(surplusPower)}</p>
+            <p>Power Efficiency: ${totalPower > 0 ? Math.floor((usedPower / totalPower) * 100) : 0}%</p>
+        </div>
+        <div>
+            <h3>Room Composition</h3>
+            <p>Power Systems: ${powerRooms}</p>
+            <p>Engine Rooms: ${engineRooms}</p>
+            <p>Command Rooms: ${commandRooms}</p>
+            <p>Tactical Systems: ${tacticalRooms}</p>
+            <p>Utility Rooms: ${utilityRooms}</p>
+        </div>
+        <div>
+            <h3>Financial Projections (5-day run)</h3>
+            <p>Estimated Daily Income: ${projectedDailyIncome} credits</p>
+            <p>5-Day Income: ${projectedFiveDayIncome} credits</p>
+            <p>Daily Maintenance Cost: ${dailyMaintenanceCost} credits</p>
+            <p>5-Day Maintenance: ${fiveDayMaintenanceCost} credits</p>
+            <p>Projected Net Profit: ${netProfit} credits</p>
+        </div>
+    `;
+
+            statusModal.style.display = 'flex';
+        }
+
+        // Calculate repair costs and show confirmation
+        function showRepairConfirmation() {
+            const repairModal = document.getElementById('repair-modal');
+            const repairContent = document.getElementById('repair-content');
+
+            let totalRepairCost = 0;
+            let totalRepairAmount = 0;
+            let roomsToRepair = 0;
+
+            // Calculate repair needs and costs
+            gameState.nodes.forEach(node => {
+                if (node.durability < 90) {
+                    const repairAmount = 90 - node.durability;
+                    totalRepairAmount += repairAmount;
+                    roomsToRepair++;
+
+                    // Cost formula: repair amount * 5 * room base cost / 100
+                    const roomType = roomTypes.find(r => r.id === node.type);
+                    const roomCost = roomType ? roomType.cost : 500;
+                    totalRepairCost += Math.floor(repairAmount * 5 * roomCost / 100);
+                }
+            });
+
+            // If no repairs needed
+            if (roomsToRepair === 0) {
+                repairContent.innerHTML = `
+            <p>All rooms are in good condition (90% durability or higher).</p>
+            <p>No repairs needed at this time.</p>
+        `;
+
+                // Hide the confirm button
+                document.getElementById('confirm-repair').style.display = 'none';
+            } else {
+                repairContent.innerHTML = `
+            <p>${roomsToRepair} room(s) need repair.</p>
+            <p>Average repair amount: ${Math.floor(totalRepairAmount / roomsToRepair)}%</p>
+            <p>Total repair cost: ${totalRepairCost} credits</p>
+            <p>All rooms will be repaired to at least 90% durability.</p>
+            <p>Do you want to proceed with repairs?</p>
+        `;
+
+                // Show the confirm button
+                document.getElementById('confirm-repair').style.display = 'block';
+
+                // Store the cost for the confirmation handler
+                gameState.pendingRepairCost = totalRepairCost;
+            }
+
+            repairModal.style.display = 'flex';
+        }
+
+        // Perform the actual repairs
+        function repairShip() {
+            const repairCost = gameState.pendingRepairCost || 0;
+
+            // Check if player has enough credits
+            if (gameState.credits < repairCost) {
+                showNotification('Error', 'Not enough credits for repairs.');
+                return;
+            }
+
+            // Apply repairs and deduct cost
+            let roomsRepaired = 0;
+
+            gameState.nodes.forEach(node => {
+                if (node.durability < 90) {
+                    node.durability = 90 + Math.random() * 10; // Between 90% and 100%
+                    roomsRepaired++;
+                }
+            });
+
+            // Deduct credits
+            gameState.credits -= repairCost;
+            updateCreditsDisplay();
+
+            // Update visuals
+            updateNodeVisuals();
+
+            // Close modal and notify
+            document.getElementById('repair-modal').style.display = 'none';
+            showNotification('Repairs Complete', `${roomsRepaired} room(s) repaired successfully for ${repairCost} credits.`);
+        }
+
         // Show the ship status modal with detailed information
         function showShipStatus() {
             const statusContent = document.getElementById('status-content');
@@ -2246,9 +2725,39 @@
                 }
             });
 
+            // Room type filter events
+            document.getElementById('room-type-filter').addEventListener('click', (e) => {
+                if (e.target.classList.contains('type-btn')) {
+                    document.querySelectorAll('.type-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    e.target.classList.add('active');
+                    gameState.roomTypeFilter = e.target.dataset.type;
+                    renderRoomList();
+                }
+            });
+
             // Modal events
             closeStatusBtn.addEventListener('click', () => {
                 statusModal.style.display = 'none';
+            });
+
+            // Diagnostics button
+            document.getElementById('diagnostics-btn').addEventListener('click', showDiagnostics);
+
+            // Repair button
+            document.getElementById('repair-btn').addEventListener('click', showRepairConfirmation);
+
+            // Repair confirmation buttons
+            document.getElementById('confirm-repair').addEventListener('click', repairShip);
+            document.getElementById('cancel-repair').addEventListener('click', () => {
+                document.getElementById('repair-modal').style.display = 'none';
+            });
+
+            // Repair modal close button
+            document.querySelector('#repair-modal .close-btn').addEventListener('click', () => {
+                document.getElementById('repair-modal').style.display = 'none';
             });
 
             document.querySelector('#status-modal .close-btn').addEventListener('click', () => {
