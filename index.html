@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StarNode: Ship Builder</title>
+
+    <!-- QR Code libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
     <style>
         :root {
             --primary-color: #3498db;
@@ -613,12 +618,61 @@
         .btn:hover {
             background-color: #2980b9;
         }
+
+        .ship-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .ship-name-input {
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            width: 180px;
+        }
+
+        .export-options,
+        .import-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .import-option {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        #qrcode {
+            background-color: white;
+            padding: 15px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .ship-controls {
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 
 <body>
     <header>
         <h1>StarNode: Ship Builder</h1>
+        <div class="ship-controls">
+            <input type="text" placeholder="Ship Name" id="ship-name" class="ship-name-input" value="Unnamed Ship">
+            <button class="btn" id="save-ship-btn">Save Ship</button>
+            <button class="btn" id="load-ship-btn">Load Ship</button>
+        </div>
         <div class="job-panel">
             <input type="number" min="1" max="30" value="5" class="job-input" id="job-days">
             <button class="btn" id="run-job-btn">Run Jobs</button>
@@ -769,6 +823,53 @@
             <div class="modal-footer">
                 <button class="btn" id="confirm-repair">Repair</button>
                 <button class="btn" id="cancel-repair">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ship Save/Load modal -->
+    <div class="modal" id="save-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Save/Export Ship</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Ship Name: <span id="export-ship-name"></span></p>
+                <div class="export-options">
+                    <button class="btn" id="export-json-btn">Export as JSON</button>
+                    <button class="btn" id="export-qr-btn">Export as QR Code</button>
+                </div>
+                <div id="qr-container" style="display: none; text-align: center; margin-top: 15px;">
+                    <div id="qrcode"></div>
+                    <button class="btn" id="download-qr-btn" style="margin-top: 10px;">Download QR Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ship Import modal -->
+    <div class="modal" id="load-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import Ship</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-options">
+                    <div class="import-option">
+                        <h3>Upload JSON or QR Image</h3>
+                        <input type="file" id="import-file" accept=".json,image/*">
+                        <button class="btn" id="import-file-btn">Import File</button>
+                    </div>
+                    <div class="import-option">
+                        <h3>Scan QR Code</h3>
+                        <button class="btn" id="scan-qr-btn">Scan with Camera</button>
+                        <div id="scanner-container" style="display: none; margin-top: 10px;">
+                            <video id="scanner-video" style="width: 100%; max-width: 300px;"></video>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2639,6 +2740,291 @@
                 `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
         }
 
+        // Function to prepare ship data for export
+        function prepareShipData() {
+            const shipName = document.getElementById('ship-name').value.trim() || 'Unnamed Ship';
+
+            // Prepare the ship data
+            const shipData = {
+                name: shipName,
+                credits: gameState.credits,
+                lastNodeId: gameState.lastNodeId,
+                lastConnectionId: gameState.lastConnectionId,
+                nodes: gameState.nodes,
+                connections: gameState.connections,
+                timestamp: Date.now()
+            };
+
+            return shipData;
+        }
+
+        // Export ship as JSON file
+        function exportAsJSON() {
+            const shipData = prepareShipData();
+
+            // Convert to JSON string
+            const jsonString = JSON.stringify(shipData, null, 2);
+
+            // Create download link
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonString);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `${shipData.name.replace(/\s+/g, '_')}.json`);
+
+            // Trigger download
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+
+            showNotification('Ship Exported', `${shipData.name} has been exported as JSON file.`);
+        }
+
+        // Generate QR code for ship data
+        function generateQRCode() {
+            const shipData = prepareShipData();
+            const jsonString = JSON.stringify(shipData);
+
+            // Check data size
+            if (jsonString.length > 2500) {
+                showNotification('Warning', 'Ship design is too complex for QR code. Try simplifying or use JSON export.');
+                return;
+            }
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            // Use QRCode library
+            const qr = qrcode(0, 'L');
+            qr.addData(jsonString);
+            qr.make();
+
+            // Generate SVG with proper sizing
+            qrContainer.innerHTML = qr.createSvgTag(5, 0);
+
+            // Show QR code container
+            document.getElementById('qr-container').style.display = 'block';
+
+            // Update ship name in modal
+            document.getElementById('export-ship-name').textContent = shipData.name;
+        }
+
+        // Download QR code as image
+        function downloadQRCode() {
+            const qrSvg = document.querySelector('#qrcode svg');
+            const shipName = document.getElementById('ship-name').value.trim() || 'Unnamed Ship';
+
+            // Convert SVG to canvas and download
+            const svgData = new XMLSerializer().serializeToString(qrSvg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function () {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                // Convert to downloadable link
+                const a = document.createElement('a');
+                a.download = `${shipName.replace(/\s+/g, '_')}_QR.png`;
+                a.href = canvas.toDataURL('image/png');
+                a.click();
+            };
+
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        }
+
+        // Import ship from file (JSON or QR image)
+        function importFromFile() {
+            const fileInput = document.getElementById('import-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showNotification('Error', 'Please select a file to import.');
+                return;
+            }
+
+            if (file.type === 'application/json') {
+                // Handle JSON file
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        importShipFromJSON(e.target.result);
+                    } catch (error) {
+                        showNotification('Error', 'Invalid ship data: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            } else if (file.type.startsWith('image/')) {
+                // Handle image file (QR code)
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    decodeQRFromImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                showNotification('Error', 'Unsupported file type. Please use JSON or image files.');
+            }
+        }
+
+        // Decode QR code from image
+        function decodeQRFromImage(imageDataUrl) {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    try {
+                        importShipFromJSON(code.data);
+                    } catch (error) {
+                        showNotification('Error', 'Invalid QR code data: ' + error.message);
+                    }
+                } else {
+                    showNotification('Error', 'No QR code found in the image.');
+                }
+            };
+            img.src = imageDataUrl;
+        }
+
+        // Start QR code scanning with camera
+        function startQRScanner() {
+            const video = document.getElementById('scanner-video');
+            const scannerContainer = document.getElementById('scanner-container');
+
+            scannerContainer.style.display = 'block';
+
+            // Request camera access
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true); // Required for iOS
+                    video.play();
+                    requestAnimationFrame(scanQRCodeFrame);
+                })
+                .catch(function (err) {
+                    showNotification('Error', 'Camera access denied or not available: ' + err.message);
+                    scannerContainer.style.display = 'none';
+                });
+        }
+
+        // Process video frames for QR scanning
+        function scanQRCodeFrame() {
+            const video = document.getElementById('scanner-video');
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    // Stop camera
+                    stopQRScanner();
+
+                    // Process the QR code data
+                    try {
+                        importShipFromJSON(code.data);
+                    } catch (error) {
+                        showNotification('Error', 'Invalid QR code data: ' + error.message);
+                    }
+                }
+            }
+
+            // Continue scanning
+            requestAnimationFrame(scanQRCodeFrame);
+        }
+
+        // Stop QR scanner
+        function stopQRScanner() {
+            const video = document.getElementById('scanner-video');
+            const scannerContainer = document.getElementById('scanner-container');
+
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+
+            scannerContainer.style.display = 'none';
+        }
+
+        // Import ship from JSON string
+        function importShipFromJSON(jsonString) {
+            try {
+                const shipData = JSON.parse(jsonString);
+
+                // Validate ship data
+                if (!shipData.name || !Array.isArray(shipData.nodes) || !Array.isArray(shipData.connections)) {
+                    showNotification('Error', 'Invalid ship data format.');
+                    return;
+                }
+
+                // Clear current ship
+                clearShip();
+
+                // Load ship data
+                document.getElementById('ship-name').value = shipData.name;
+                gameState.credits = shipData.credits;
+                gameState.lastNodeId = shipData.lastNodeId || 0;
+                gameState.lastConnectionId = shipData.lastConnectionId || 0;
+
+                // Create nodes
+                shipData.nodes.forEach(node => {
+                    gameState.nodes.push(node);
+                    renderNode(node);
+                });
+
+                // Create connections
+                shipData.connections.forEach(connection => {
+                    gameState.connections.push(connection);
+                    drawConnection(connection);
+                });
+
+                // Update displays
+                updateCreditsDisplay();
+                calculateNodeEfficiency();
+                updateNodeVisuals();
+                updatePowerDisplay();
+
+                // Close modal
+                document.getElementById('load-modal').style.display = 'none';
+
+                showNotification('Ship Imported', `${shipData.name} has been imported successfully.`);
+            } catch (error) {
+                showNotification('Error', 'Failed to import ship: ' + error.message);
+            }
+        }
+
+        // Clear the current ship
+        function clearShip() {
+            // Remove all node elements
+            document.querySelectorAll('.node').forEach(node => node.remove());
+
+            // Remove all connection elements
+            document.querySelectorAll('.connection, .connection-arrow').forEach(conn => conn.remove());
+
+            // Reset game state
+            gameState.nodes = [];
+            gameState.connections = [];
+            gameState.selectedNode = null;
+
+            // Update node info panel
+            updateNodeInfoPanel();
+        }
+
         // Set up all event listeners
         function setupEventListeners() {
             // Grid events
@@ -2780,12 +3166,56 @@
             // Run jobs button
             document.getElementById('run-job-btn').addEventListener('click', runJobs);
 
-            // Add global event listener to show status on 's' key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 's' || e.key === 'S') {
-                    showShipStatus();
-                }
+            // Ship name input
+            document.getElementById('ship-name').addEventListener('change', (e) => {
+                gameState.shipName = e.target.value || 'Unnamed Ship';
             });
+
+            // Save/Export ship button
+            document.getElementById('save-ship-btn').addEventListener('click', () => {
+                document.getElementById('export-ship-name').textContent =
+                    document.getElementById('ship-name').value.trim() || 'Unnamed Ship';
+                document.getElementById('save-modal').style.display = 'flex';
+                document.getElementById('qr-container').style.display = 'none';
+            });
+
+            // JSON export button
+            document.getElementById('export-json-btn').addEventListener('click', exportAsJSON);
+
+            // QR code export button
+            document.getElementById('export-qr-btn').addEventListener('click', generateQRCode);
+
+            // Download QR code button
+            document.getElementById('download-qr-btn').addEventListener('click', downloadQRCode);
+
+            // Load/Import ship button
+            document.getElementById('load-ship-btn').addEventListener('click', () => {
+                document.getElementById('load-modal').style.display = 'flex';
+                document.getElementById('scanner-container').style.display = 'none';
+            });
+
+            // Import file button
+            document.getElementById('import-file-btn').addEventListener('click', importFromFile);
+
+            // Scan QR button
+            document.getElementById('scan-qr-btn').addEventListener('click', startQRScanner);
+
+            // Modal close buttons
+            document.querySelector('#save-modal .close-btn').addEventListener('click', () => {
+                document.getElementById('save-modal').style.display = 'none';
+            });
+
+            document.querySelector('#load-modal .close-btn').addEventListener('click', () => {
+                document.getElementById('load-modal').style.display = 'none';
+                stopQRScanner();
+            });
+
+            // // Add global event listener to show status on 's' key
+            // document.addEventListener('keydown', (e) => {
+            //     if (e.key === 's' || e.key === 'S') {
+            //         showShipStatus();
+            //     }
+            // });
 
             // Add header click event to show status
             document.querySelector('header h1').addEventListener('click', showShipStatus);
