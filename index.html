@@ -377,6 +377,83 @@
             }
         }
 
+        .sidebar-toggle {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--panel-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 50%;
+    z-index: 20;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-toggle-icon {
+    width: 20px;
+    height: 20px;
+    position: relative;
+}
+
+.sidebar-toggle-icon::before,
+.sidebar-toggle-icon::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: var(--text-color);
+    left: 0;
+    transition: transform 0.3s;
+}
+
+.sidebar-toggle-icon::before {
+    top: 8px;
+    transform: rotate(45deg);
+}
+
+.sidebar-toggle-icon::after {
+    bottom: 9px;
+    transform: rotate(-45deg);
+}
+
+.sidebar-toggle.collapsed .sidebar-toggle-icon::before {
+    transform: rotate(-45deg);
+}
+
+.sidebar-toggle.collapsed .sidebar-toggle-icon::after {
+    transform: rotate(45deg);
+}
+
+/* Update mobile styles */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        display: flex;
+    }
+    
+    .sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 250px;
+        transition: transform 0.3s ease;
+        z-index: 15;
+    }
+    
+    .sidebar.collapsed {
+        transform: translateX(100%);
+    }
+    
+    .controls {
+        bottom: 20px;
+    }
+}
+
         /* Modal styles */
         .modal {
             display: none;
@@ -527,6 +604,11 @@
                 <div class="control-btn" id="connect-mode">🔗</div>
             </div>
         </div>
+
+        <div class="sidebar-toggle" id="sidebar-toggle">
+            <div class="sidebar-toggle-icon"></div>
+        </div>
+
         <div class="sidebar">
             <h2>Available Rooms</h2>
             <input type="text" class="search-box" id="search-rooms" placeholder="Search rooms...">
@@ -2003,6 +2085,21 @@
             zoomInBtn.addEventListener('click', () => zoomGrid(1.2));
             zoomOutBtn.addEventListener('click', () => zoomGrid(0.8));
             resetViewBtn.addEventListener('click', centerGridView);
+
+            // Add sidebar toggle for mobile
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.querySelector('.sidebar');
+
+sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    sidebarToggle.classList.toggle('collapsed');
+});
+
+// Default to collapsed sidebar on mobile
+if (window.innerWidth <= 768) {
+    sidebar.classList.add('collapsed');
+    sidebarToggle.classList.add('collapsed');
+}
             
             // Mode buttons
             deleteBtn.addEventListener('click', () => {
