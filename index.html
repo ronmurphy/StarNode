@@ -3210,12 +3210,16 @@
                 stopQRScanner();
             });
 
-            // // Add global event listener to show status on 's' key
-            // document.addEventListener('keydown', (e) => {
-            //     if (e.key === 's' || e.key === 'S') {
-            //         showShipStatus();
-            //     }
-            // });
+            document.addEventListener('keydown', (e) => {
+                // Only process shortcuts if no input field is active
+                if (document.activeElement.tagName !== 'INPUT' &&
+                    document.activeElement.tagName !== 'TEXTAREA') {
+                    if (e.key === 's' || e.key === 'S') {
+                        showShipStatus();
+                    }
+                    // Other shortcuts can go here
+                }
+            });
 
             // Add header click event to show status
             document.querySelector('header h1').addEventListener('click', showShipStatus);
