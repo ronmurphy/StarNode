@@ -1521,6 +1521,66 @@
             font-weight: bold;
             font-size: 16px;
         }
+
+        .encounter-option {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .encounter-option:hover {
+            background-color: var(--highlight-color);
+            transform: translateY(-2px);
+        }
+
+        #encounter-options {
+            transition: opacity 0.5s;
+        }
+
+        .encounter-result {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        #result-details {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(52, 152, 219, 0.2);
+            border-radius: 5px;
+            max-width: 80%;
+        }
+
+        .combat-damage {
+            animation: damageFlash 0.3s 3;
+        }
+
+        @keyframes damageFlash {
+            0% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.5) saturate(1.5);
+            }
+
+            100% {
+                filter: brightness(1);
+            }
+        }
     </style>
 </head>
 
@@ -2471,6 +2531,491 @@
             }
         };
 
+        // Main encounter database
+        const encounters = {
+            combat: [
+                {
+                    id: 'klingon-attack',
+                    universe: 'star-trek',
+                    title: 'Klingon Patrol',
+                    description: 'A Klingon Bird of Prey decloaks off your starboard bow. They demand you leave their territory immediately.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/klingon.png',
+                    options: [
+                        {
+                            text: 'Engage in battle',
+                            requires: { type: 'tactical', count: 1 },
+                            success: {
+                                text: 'Your tactical systems lock onto the Klingon vessel. After exchanging fire, you manage to disable their weapons.',
+                                credits: 500,
+                                durabilityLoss: { tactical: 20, power: 10 }
+                            },
+                            failure: {
+                                text: 'Without proper tactical systems, your attack is ineffective. The Klingons retaliate with full force.',
+                                durabilityLoss: { all: 30 }
+                            }
+                        },
+                        {
+                            text: 'Attempt to flee',
+                            requires: { type: 'engines', count: 1 },
+                            success: {
+                                text: 'Your engines power up to maximum and you manage to outrun the Klingons.',
+                                durabilityLoss: { engines: 15 }
+                            },
+                            failure: {
+                                text: 'Your engines aren\'t powerful enough to escape. The Klingons fire several shots across your bow.',
+                                durabilityLoss: { all: 20 }
+                            }
+                        },
+                        {
+                            text: 'Hail them and apologize',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'Your diplomatic approach seems to satisfy the Klingons. They allow you to leave their territory peacefully.',
+                                credits: 0
+                            },
+                            failure: {
+                                text: 'The Klingons are not impressed by your communication attempt and fire a warning shot.',
+                                durabilityLoss: { hull: 15 }
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'imperial-interceptor',
+                    universe: 'star-wars',
+                    title: 'Imperial Interception',
+                    description: 'An Imperial Star Destroyer moves to block your path. TIE fighters are being deployed.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/imperial.png',
+                    options: [
+                        {
+                            text: 'Engage fighters',
+                            requires: { type: 'tactical', count: 2 },
+                            success: {
+                                text: 'Your weapons systems make short work of the TIE fighters. The Star Destroyer holds position but doesn\'t pursue.',
+                                credits: 600,
+                                durabilityLoss: { tactical: 25, power: 15 }
+                            },
+                            failure: {
+                                text: 'Your tactical systems are overwhelmed by the TIE fighters. They strafe your vessel repeatedly.',
+                                durabilityLoss: { all: 35 }
+                            }
+                        },
+                        {
+                            text: 'Make a run for it',
+                            requires: { type: 'engines', count: 2 },
+                            success: {
+                                text: 'You push your engines beyond safety limits and manage to outrun the Imperial forces.',
+                                durabilityLoss: { engines: 30 }
+                            },
+                            failure: {
+                                text: 'Your engines can\'t outpace the TIE fighters. They score several direct hits.',
+                                durabilityLoss: { all: 25 }
+                            }
+                        },
+                        {
+                            text: 'Transmit fake clearance codes',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'Remarkably, your forged Imperial codes are accepted. The Star Destroyer allows you to pass.',
+                                credits: 300
+                            },
+                            failure: {
+                                text: 'Your codes are immediately flagged as fraudulent. The Imperial forces open fire.',
+                                durabilityLoss: { hull: 20, command: 15 }
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'shadow-vessel',
+                    universe: 'babylon-5',
+                    title: 'Shadow Vessel Encounter',
+                    description: 'A terrifying Shadow vessel appears seemingly from nowhere, its spider-like form menacing against the stars.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/shadow.png',
+                    options: [
+                        {
+                            text: 'Attempt to fight',
+                            requires: { type: 'tactical', count: 3 },
+                            success: {
+                                text: 'Your weapons barely penetrate their advanced defenses, but you cause enough damage to convince them you\'re not worth the trouble.',
+                                credits: 1000,
+                                durabilityLoss: { tactical: 40, power: 30 }
+                            },
+                            failure: {
+                                text: 'The Shadow vessel\'s weapons tear through your defenses like they weren\'t even there.',
+                                durabilityLoss: { all: 50 }
+                            }
+                        },
+                        {
+                            text: 'Run at maximum speed',
+                            requires: { type: 'engines', count: 3 },
+                            success: {
+                                text: 'By some miracle, your engines generate enough power to outpace the Shadow vessel, at least temporarily.',
+                                durabilityLoss: { engines: 45, power: 25 }
+                            },
+                            failure: {
+                                text: 'Your engines are no match for the Shadow technology. They catch up with disturbing ease.',
+                                durabilityLoss: { all: 40 }
+                            }
+                        },
+                        {
+                            text: 'Power down all systems and drift',
+                            requires: { type: 'command', count: 2 },
+                            success: {
+                                text: 'A desperate gambit, but it works. The Shadow vessel seems to lose interest in your apparently dead ship.',
+                                credits: 0,
+                                durabilityLoss: { power: 10 } // Minor stress from emergency shutdown
+                            },
+                            failure: {
+                                text: 'The Shadow vessel is not fooled by your ruse and attacks anyway.',
+                                durabilityLoss: { hull: 30, command: 20 }
+                            }
+                        }
+                    ]
+                }
+            ],
+
+            diplomatic: [
+                {
+                    id: 'federation-embassy',
+                    universe: 'star-trek',
+                    title: 'Federation Embassy Request',
+                    description: 'You receive a hail from a Federation diplomatic vessel requesting emergency transport for an ambassador.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/federation.png',
+                    options: [
+                        {
+                            text: 'Offer your services',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'The ambassador is impressed by your ship\'s command facilities. The Federation offers payment for your assistance.',
+                                credits: 800,
+                                durabilityLoss: {}
+                            },
+                            failure: {
+                                text: 'Your command facilities are insufficient for diplomatic needs, but they appreciate the offer and provide a small payment.',
+                                credits: 200
+                            }
+                        },
+                        {
+                            text: 'Negotiate for better payment',
+                            requires: { type: 'command', count: 2 },
+                            success: {
+                                text: 'Your experienced command crew negotiates a premium rate for the diplomatic transport.',
+                                credits: 1200
+                            },
+                            failure: {
+                                text: 'Your negotiation attempt offends the Federation representative. They withdraw their offer.',
+                                credits: 0
+                            }
+                        },
+                        {
+                            text: 'Decline politely',
+                            requires: {},
+                            success: {
+                                text: 'You politely explain that you have other commitments. The Federation understands.',
+                                credits: 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'trade-federation',
+                    universe: 'star-wars',
+                    title: 'Trade Federation Negotiation',
+                    description: 'A Trade Federation vessel approaches with an offer to establish a lucrative shipping route.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/trade.png',
+                    options: [
+                        {
+                            text: 'Accept the terms',
+                            requires: { type: 'utility', count: 1 },
+                            success: {
+                                text: 'The Trade Federation is pleased with your cargo facilities and signs a modest contract.',
+                                credits: 700
+                            },
+                            failure: {
+                                text: 'Without proper utility systems, you can only accept a minor shipping role.',
+                                credits: 300
+                            }
+                        },
+                        {
+                            text: 'Negotiate aggressively',
+                            requires: { type: 'tactical', count: 1, type: 'command', count: 1 },
+                            success: {
+                                text: 'Your imposing tactical presence helps your command crew negotiate very favorable terms.',
+                                credits: 1500
+                            },
+                            failure: {
+                                text: 'The Trade Federation representatives are intimidated by your approach and withdraw their offer.',
+                                credits: 0
+                            }
+                        },
+                        {
+                            text: 'Offer to transport sensitive cargo',
+                            requires: { type: 'utility', count: 2 },
+                            success: {
+                                text: 'The Trade Federation is impressed by your discretion and specialized cargo facilities. They offer a premium contract.',
+                                credits: 2000
+                            },
+                            failure: {
+                                text: 'Your ship lacks the specialized facilities needed for sensitive cargo transport.',
+                                credits: 0
+                            }
+                        }
+                    ]
+                }
+            ],
+
+            salvage: [
+                {
+                    id: 'abandoned-station',
+                    universe: 'all',
+                    title: 'Abandoned Space Station',
+                    description: 'Sensors detect an abandoned space station drifting in an asteroid field. It appears to be of unknown origin.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/station.png',
+                    options: [
+                        {
+                            text: 'Send a salvage team',
+                            requires: { type: 'utility', count: 1 },
+                            success: {
+                                text: 'Your salvage team recovers valuable technology from the station.',
+                                credits: 600,
+                                salvage: {
+                                    chance: 0.7,
+                                    possibleRooms: ['deflector-array', 'power-conduit', 'junction-node']
+                                }
+                            },
+                            failure: {
+                                text: 'Without proper utility systems, your salvage attempt is haphazard and yields little of value.',
+                                credits: 150
+                            }
+                        },
+                        {
+                            text: 'Perform detailed scan',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'Your sensors locate a particularly valuable module that you successfully recover.',
+                                credits: 400,
+                                salvage: {
+                                    chance: 0.9,
+                                    possibleRooms: ['shield-generator', 'fusion-reactor', 'junction-node']
+                                }
+                            },
+                            failure: {
+                                text: 'Your sensors aren\'t sophisticated enough to identify valuable salvage.',
+                                credits: 100
+                            }
+                        },
+                        {
+                            text: 'Ignore and continue',
+                            requires: {},
+                            success: {
+                                text: 'You decide the potential risk isn\'t worth any possible salvage.',
+                                credits: 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'derelict-freighter',
+                    universe: 'all',
+                    title: 'Derelict Freighter',
+                    description: 'Your ship encounters a damaged freighter drifting without power. Life support appears to be minimal.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/freighter.png',
+                    options: [
+                        {
+                            text: 'Salvage abandoned cargo',
+                            requires: { type: 'utility', count: 1 },
+                            success: {
+                                text: 'You recover valuable cargo and some useful ship components.',
+                                credits: 800,
+                                salvage: {
+                                    chance: 0.6,
+                                    possibleRooms: ['power-conduit', 'junction-node', 'interceptor-grid']
+                                }
+                            },
+                            failure: {
+                                text: 'Your salvage attempt is disorganized and yields only a small amount of cargo.',
+                                credits: 200
+                            }
+                        },
+                        {
+                            text: 'Rescue survivors and salvage',
+                            requires: { type: 'command', count: 1, type: 'utility', count: 1 },
+                            success: {
+                                text: 'You rescue the remaining crew and they gratefully allow you to salvage some of their ship components.',
+                                credits: 500,
+                                salvage: {
+                                    chance: 1.0,
+                                    possibleRooms: ['gravimetric-engine', 'fusion-reactor', 'earthforce-cic']
+                                }
+                            },
+                            failure: {
+                                text: 'You attempt a rescue but lack the proper facilities. The survivors thank you but have little to offer.',
+                                credits: 100
+                            }
+                        },
+                        {
+                            text: 'Call for professional assistance',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'You notify authorities who reward you for your ethical behavior.',
+                                credits: 400
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'ancient-artifact',
+                    universe: 'all',
+                    title: 'Ancient Technological Artifact',
+                    description: 'Your sensors detect an unusual energy signature from what appears to be an ancient alien device floating in space.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/artifact.png',
+                    options: [
+                        {
+                            text: 'Attempt to retrieve it',
+                            requires: { type: 'utility', count: 1 },
+                            success: {
+                                text: 'You successfully bring the artifact aboard and manage to interface it with your systems.',
+                                credits: 300,
+                                salvage: {
+                                    chance: 0.8,
+                                    possibleRooms: ['holtzman-generator', 'quantium-40-generator', 'kyber-crystal-matrix']
+                                }
+                            },
+                            failure: {
+                                text: 'The artifact proves too complex to safely retrieve with your current equipment.',
+                                credits: 0
+                            }
+                        },
+                        {
+                            text: 'Study it remotely',
+                            requires: { type: 'command', count: 2 },
+                            success: {
+                                text: 'Your thorough analysis reveals the artifact\'s purposes and functions. This data is valuable to researchers.',
+                                credits: 800
+                            },
+                            failure: {
+                                text: 'Your sensors gather some data, but nothing particularly valuable.',
+                                credits: 150
+                            }
+                        },
+                        {
+                            text: 'Leave it alone',
+                            requires: {},
+                            success: {
+                                text: 'Ancient alien technology is notoriously unpredictable. Better safe than sorry.',
+                                credits: 0
+                            }
+                        }
+                    ]
+                }
+            ],
+
+            // Add additional encounter types as needed
+            trade: [
+                {
+                    id: 'ferengi-trader',
+                    universe: 'star-trek',
+                    title: 'Ferengi Merchant Ship',
+                    description: 'A Ferengi Marauder hails you, offering "special deals" on various goods and technologies.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/ferengi.png',
+                    options: [
+                        {
+                            text: 'Negotiate a fair trade',
+                            requires: { type: 'command', count: 1 },
+                            success: {
+                                text: 'Despite their attempts to swindle you, you manage to secure a fair deal on some useful components.',
+                                credits: -500, // Cost
+                                repair: 30, // Repair value to ship
+                                success_text: 'Components purchased and installed. Ship durability improved.'
+                            },
+                            failure: {
+                                text: 'The Ferengi runs circles around your negotiation attempts. You pay far too much for subpar components.',
+                                credits: -800,
+                                repair: 10,
+                                success_text: 'Overpriced components installed with minimal improvement to ship durability.'
+                            }
+                        },
+                        {
+                            text: 'Purchase their "premium" offer',
+                            requires: { credits: 1500 },
+                            success: {
+                                text: 'The premium package is expensive but includes some genuinely high-quality components.',
+                                credits: -1500,
+                                repair: 70,
+                                success_text: 'Premium components installed. Ship durability significantly improved.'
+                            },
+                            failure: {
+                                text: 'You don\'t have enough credits for their premium offer.',
+                                credits: 0
+                            }
+                        },
+                        {
+                            text: 'Decline their offers',
+                            requires: {},
+                            success: {
+                                text: 'You politely decline. The Ferengi captain seems personally offended that you don\'t want to buy anything.',
+                                credits: 0
+                            }
+                        }
+                    ]
+                }
+            ],
+
+            special: [
+                {
+                    id: 'spatial-anomaly',
+                    universe: 'all',
+                    title: 'Unusual Spatial Anomaly',
+                    description: 'Your ship encounters a swirling spatial distortion that seems to bend the fabric of space-time itself.',
+                    image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/anomaly.png',
+                    options: [
+                        {
+                            text: 'Study the anomaly',
+                            requires: { type: 'command', count: 2 },
+                            success: {
+                                text: 'Your scientific analysis reveals fascinating data about the anomaly that will be valuable to researchers.',
+                                credits: 1000
+                            },
+                            failure: {
+                                text: 'The anomaly\'s properties exceed your sensors\' capabilities. You gather only basic readings.',
+                                credits: 200
+                            }
+                        },
+                        {
+                            text: 'Enter the anomaly',
+                            requires: { type: 'power', count: 2, type: 'engines', count: 2 },
+                            success: {
+                                text: 'Remarkably, your ship emerges on the other side in a previously unexplored region of space, making a significant discovery.',
+                                credits: 2000
+                            },
+                            failure: {
+                                text: 'The anomaly\'s energies wreak havoc with your systems. You barely manage to escape.',
+                                durabilityLoss: { all: 40 }
+                            }
+                        },
+                        {
+                            text: 'Proceed with caution around it',
+                            requires: {},
+                            success: {
+                                text: 'You give the anomaly a wide berth and continue on your journey, noting its location for future explorers.',
+                                credits: 100
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Create placeholder images for encounters that don't have defined images
+        const encounterPlaceholders = {
+            combat: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/combat.png',
+            diplomatic: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/diplomatic.png',
+            salvage: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/salvage.png',
+            trade: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/trade.png',
+            special: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/encounters/special.png'
+        };
+
         // DOM elements
         const gridElement = document.getElementById('grid');
         const creditsDisplay = document.getElementById('credits');
@@ -2507,6 +3052,17 @@
 
             // Show faction selection after a brief delay
             setTimeout(showFactionSelection, 500);
+        }
+
+        function initEncounterSystem() {
+            // addEncounterStyles();
+
+            // Override the continue button in encounter results
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.id === 'continue-btn' && e.target.closest('.encounter-result')) {
+                    continueJobProcessing();
+                }
+            }, false);
         }
 
         // Update the credits display
@@ -4000,140 +4556,140 @@
             connectionsModal.style.display = 'flex';
         }
 
+        // Function to get encounters appropriate for the ship's capabilities
+        function getEligibleEncounters(ship) {
+            const eligibleEncounters = [];
+
+            // Process all encounter types
+            for (const [encounterType, encounterList] of Object.entries(encounters)) {
+                // Filter based on ship's universe if applicable
+                let filteredEncounters = encounterList;
+
+                if (ship.universe && ship.universe !== 'all') {
+                    filteredEncounters = encounterList.filter(enc =>
+                        enc.universe === 'all' || enc.universe === ship.universe
+                    );
+                }
+
+                // Add eligible encounters to the list
+                eligibleEncounters.push(...filteredEncounters);
+            }
+
+            return eligibleEncounters;
+        }
+
+        // Function to check if ship meets requirements for an option
+        function meetsRequirements(ship, requirements) {
+            if (!requirements || Object.keys(requirements).length === 0) {
+                return true;
+            }
+
+            // Check credit requirements
+            if (requirements.credits && ship.credits < requirements.credits) {
+                return false;
+            }
+
+            // Check room type requirements
+            if (requirements.type) {
+                const roomCount = ship.nodes.filter(node => {
+                    const roomType = roomTypes.find(r => r.id === node.type);
+                    return roomType && roomType.type === requirements.type;
+                }).length;
+
+                if (roomCount < requirements.count) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Function to handle salvage rewards
+        function processSalvage(salvageData) {
+            if (Math.random() <= salvageData.chance) {
+                // Determine which room to salvage
+                const possibleRooms = salvageData.possibleRooms;
+                const roomId = possibleRooms[Math.floor(Math.random() * possibleRooms.length)];
+
+                // Find room data
+                const roomData = roomTypes.find(r => r.id === roomId);
+                if (!roomData) return null;
+
+                // Create salvaged room with reduced durability
+                const durability = 30 + Math.floor(Math.random() * 40); // 30-70% durability
+
+                return {
+                    roomId: roomId,
+                    roomName: roomData.name,
+                    durability: durability
+                };
+            }
+
+            return null;
+        }
+
+        // Function to apply durability loss to rooms
+        function applyDurabilityLoss(ship, durabilityLoss) {
+            if (!durabilityLoss) return;
+
+            if (durabilityLoss.all) {
+                // Apply to all rooms
+                ship.nodes.forEach(node => {
+                    node.durability = Math.max(0, node.durability - durabilityLoss.all);
+                });
+            } else {
+                // Apply to specific room types
+                for (const [roomType, loss] of Object.entries(durabilityLoss)) {
+                    ship.nodes.forEach(node => {
+                        const nodeRoomType = roomTypes.find(r => r.id === node.type);
+                        if (nodeRoomType && nodeRoomType.type === roomType) {
+                            node.durability = Math.max(0, node.durability - loss);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Function to create a salvaged room
+        function createSalvagedRoom(salvageResult) {
+            if (!salvageResult) return;
+
+            const roomType = roomTypes.find(r => r.id === salvageResult.roomId);
+            if (!roomType) return;
+
+            // Find a position for the new room
+            const x = 1500 + Math.floor(Math.random() * 500) - 250;
+            const y = 1500 + Math.floor(Math.random() * 500) - 250;
+
+            const nodeId = ++gameState.lastNodeId;
+            const node = {
+                id: nodeId,
+                type: roomType.id,
+                name: roomType.name,
+                universe: roomType.universe,
+                x: x,
+                y: y,
+                powerGeneration: roomType.powerGeneration,
+                powerRequirement: roomType.powerRequirement,
+                requirements: [...roomType.requirements],
+                inputs: [],
+                outputs: [],
+                effectivePowerGeneration: roomType.powerGeneration,
+                effectivePowerConsumption: roomType.powerRequirement,
+                powerSatisfied: roomType.powerRequirement === 0,
+                durability: salvageResult.durability,
+                connections: []
+            };
+
+            gameState.nodes.push(node);
+            renderNode(node);
+
+            return node;
+        }
+
         // Run jobs for specified number of days
-        // function runJobs() {
-        //     const daysInput = document.getElementById('job-days');
-        //     const days = parseInt(daysInput.value);
-
-        //     if (isNaN(days) || days < 1 || days > 30) {
-        //         showNotification('Invalid Input', 'Please enter a number between 1 and 30 days.');
-        //         return;
-        //     }
-
-        //     // Check if ship has any functional rooms
-        //     if (gameState.nodes.length === 0) {
-        //         showNotification('Error', 'You need to build some rooms first!');
-        //         return;
-        //     }
-
-        //     // Check faction requirements first
-        //     if (gameState.selectedFaction) {
-        //         checkFactionRequirements();
-
-        //         if (!gameState.factionRequirementsMet) {
-        //             showNotification('Cannot Run Jobs', `Your ship does not meet the minimum requirements for a ${factions[gameState.selectedFaction].name}. Check the diagnostics for details.`);
-        //             return;
-        //         }
-        //     }
-
-        //     // Calculate ship efficiency score
-        //     let totalPower = 0;
-        //     let usedPower = 0;
-        //     let unsatisfiedRooms = 0;
-        //     let totalRooms = gameState.nodes.length;
-
-        //     gameState.nodes.forEach(node => {
-        //         if (node.effectivePowerGeneration > 0) {
-        //             totalPower += node.effectivePowerGeneration;
-        //         }
-        //         if (node.effectivePowerConsumption > 0 && node.powerSatisfied) {
-        //             usedPower += node.effectivePowerConsumption;
-        //         }
-        //         if (!node.powerSatisfied || !node.reqSatisfied) {
-        //             unsatisfiedRooms++;
-        //         }
-        //     });
-
-        //     // Base income per day
-        //     const baseIncome = 100;
-
-        //     // Efficiency multiplier (higher is better)
-        //     let efficiencyMultiplier = 1.0;
-
-        //     // More rooms = more income
-        //     efficiencyMultiplier += totalRooms * 0.1;
-
-        //     // Unsatisfied rooms reduce efficiency
-        //     efficiencyMultiplier -= unsatisfiedRooms * 0.2;
-
-        //     // Surplus power increases efficiency
-        //     const surplusPower = totalPower - usedPower;
-        //     if (surplusPower > 0) {
-        //         efficiencyMultiplier += Math.min(1.0, surplusPower / 500);
-        //     }
-
-        //     // Calculate total income
-        //     let totalIncome = Math.max(0, Math.floor(baseIncome * efficiencyMultiplier * days));
-
-        //     // Apply faction income multiplier if applicable
-        //     // if (gameState.selectedFaction) {
-        //         const factionMultiplier = factions[gameState.selectedFaction].incomeMultiplier;
-        //         // const baseIncome = totalIncome;
-        //         totalIncome = Math.floor(totalIncome * factionMultiplier);
-
-        //         // Show notification about faction bonus/penalty
-        //         const difference = totalIncome - baseIncome;
-        //         if (difference !== 0) {
-        //             if (difference > 0) {
-        //                 showNotification('Faction Bonus', `Your ${factions[gameState.selectedFaction].name} earned a bonus of ${difference} credits.`);
-        //             } else {
-        //                 showNotification('Independent Penalty', `Your ${factions[gameState.selectedFaction].name} status resulted in a penalty of ${Math.abs(difference)} credits.`);
-        //             }
-        //         }
-        //     // }
-
-        //     // Update room durability
-        //     const roomsToDelete = [];
-
-        //     gameState.nodes.forEach(node => {
-        //         // Base durability reduction per day (3-7%)
-        //         const baseDurabilityLoss = 3 + Math.random() * 4;
-
-        //         // Additional reduction based on requirements not being met
-        //         let durabilityLoss = baseDurabilityLoss;
-
-        //         if (!node.powerSatisfied || !node.reqSatisfied) {
-        //             durabilityLoss *= 1.5; // 50% more wear if requirements not met
-        //         }
-
-        //         // Cap at 10% per day as requested
-        //         durabilityLoss = Math.min(10, durabilityLoss);
-
-        //         // Apply durability loss for all days
-        //         node.durability -= durabilityLoss * days;
-
-        //         // Check if room needs to be scrapped
-        //         if (node.durability <= 0) {
-        //             roomsToDelete.push(node.id);
-        //         }
-        //     });
-
-        //     // Remove rooms with 0 durabilityF
-        //     roomsToDelete.forEach(nodeId => {
-        //         deleteNode(nodeId);
-        //     });
-
-        //     gameState.lastJobIncome = totalIncome;
-
-        //     // Add income to credits
-        //     gameState.credits += totalIncome;
-
-        //     // Update displays
-        //     updateCreditsDisplay();
-        //     calculateNodeEfficiency();
-        //     updateNodeVisuals();
-        //     updatePowerDisplay();
-
-        //     // Show summary
-        //     showNotification('Job Complete',
-        //         `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
-        // }
-
-        // Run jobs for specified number of days
+        // Modify runJobs function to include encounters
         function runJobs() {
-
-            showShipAnimation();
-
             const daysInput = document.getElementById('job-days');
             const days = parseInt(daysInput.value);
 
@@ -4158,6 +4714,36 @@
                 }
             }
 
+            // Determine if an encounter happens
+            const encounterChance = Math.min(0.8, 0.3 + (days * 0.05)); // Higher chance with more days
+            const hasEncounter = Math.random() < encounterChance;
+
+            if (hasEncounter) {
+                // Get eligible encounters based on ship capabilities
+                const eligibleEncounters = getEligibleEncounters(gameState);
+
+                if (eligibleEncounters.length > 0) {
+                    // Select a random encounter
+                    const encounter = eligibleEncounters[Math.floor(Math.random() * eligibleEncounters.length)];
+
+                    // Show encounter animation
+                    showShipAnimationWithEncounter(encounter);
+
+                    // The rest of job processing happens after encounter resolution
+                    // This is handled by the encounter result "Continue" button
+
+                    // Store days for later processing
+                    gameState.pendingJobDays = days;
+                    return;
+                }
+            }
+
+            // If no encounter or no eligible encounters, process regular job
+            processRegularJob(days);
+        }
+
+        // Process regular job (normal income and durability loss)
+        function processRegularJob(days) {
             // Calculate ship efficiency score
             let totalPower = 0;
             let usedPower = 0;
@@ -4217,6 +4803,9 @@
 
             gameState.lastJobIncome = totalIncome;
 
+            // Show ship animation
+            showShipAnimation();
+
             // Update room durability
             const roomsToDelete = [];
 
@@ -4260,6 +4849,18 @@
             // Show summary with faction bonus/penalty included
             showNotification('Job Complete',
                 `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.${factionBonusMessage}\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
+        }
+
+        // Continue job processing after encounter
+        function continueJobProcessing() {
+            if (gameState.pendingJobDays) {
+                const days = gameState.pendingJobDays;
+                delete gameState.pendingJobDays;
+
+                // Process regular job with fewer days to account for time spent in encounter
+                const adjustedDays = Math.max(1, days - 1);
+                processRegularJob(adjustedDays);
+            }
         }
 
         // Function to prepare ship data for export
@@ -4888,7 +5489,7 @@
                     component.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
                 }
 
-                                // Add this after creating each component to visually indicate rotation capability
+                // Add this after creating each component to visually indicate rotation capability
                 const rotateHint = document.createElement('div');
                 rotateHint.style.position = 'absolute';
                 rotateHint.style.top = '0';
@@ -5003,43 +5604,43 @@
                 });
 
                 // Double click to rotate
-//                 component.addEventListener('dblclick', function() {
-//     const currentRotation = this.dataset.rotation || 0;
-//     const newRotation = (parseInt(currentRotation) + 45) % 360;
-//     this.style.transform = `rotate(${newRotation}deg)`;
-//     this.dataset.rotation = newRotation;
-//     console.log(`Rotated to ${newRotation} degrees`); // Add logging
-//     updateShipDesign();
-// });
+                //                 component.addEventListener('dblclick', function() {
+                //     const currentRotation = this.dataset.rotation || 0;
+                //     const newRotation = (parseInt(currentRotation) + 45) % 360;
+                //     this.style.transform = `rotate(${newRotation}deg)`;
+                //     this.dataset.rotation = newRotation;
+                //     console.log(`Rotated to ${newRotation} degrees`); // Add logging
+                //     updateShipDesign();
+                // });
 
-component.addEventListener('dblclick', function() {
-    const currentRotation = this.dataset.rotation || 0;
-    const newRotation = (parseInt(currentRotation) + 45) % 360;
-    this.style.transform = `rotate(${newRotation}deg)`;
-    this.dataset.rotation = newRotation;
-    console.log(`Rotated to ${newRotation} degrees`); // Add logging
-    updateShipDesign();
-});
+                component.addEventListener('dblclick', function () {
+                    const currentRotation = this.dataset.rotation || 0;
+                    const newRotation = (parseInt(currentRotation) + 45) % 360;
+                    this.style.transform = `rotate(${newRotation}deg)`;
+                    this.dataset.rotation = newRotation;
+                    console.log(`Rotated to ${newRotation} degrees`); // Add logging
+                    updateShipDesign();
+                });
 
                 // Touch rotation for mobile devices
-component.addEventListener('touchstart', function(e) {
-    if (e.touches.length !== 1) return;
-    
-    // Store the start time for detecting double tap
-    const now = Date.now();
-    const doubleTapDelay = 300; // ms
-    
-    if (this.lastTap && (now - this.lastTap) < doubleTapDelay) {
-        // Double-tap detected, rotate the component
-        const currentRotation = this.dataset.rotation || 0;
-        const newRotation = (parseInt(currentRotation) + 45) % 360;
-        this.style.transform = `rotate(${newRotation}deg)`;
-        this.dataset.rotation = newRotation;
-        updateShipDesign();
-        e.preventDefault();
-    }
-    this.lastTap = now;
-});
+                component.addEventListener('touchstart', function (e) {
+                    if (e.touches.length !== 1) return;
+
+                    // Store the start time for detecting double tap
+                    const now = Date.now();
+                    const doubleTapDelay = 300; // ms
+
+                    if (this.lastTap && (now - this.lastTap) < doubleTapDelay) {
+                        // Double-tap detected, rotate the component
+                        const currentRotation = this.dataset.rotation || 0;
+                        const newRotation = (parseInt(currentRotation) + 45) % 360;
+                        this.style.transform = `rotate(${newRotation}deg)`;
+                        this.dataset.rotation = newRotation;
+                        updateShipDesign();
+                        e.preventDefault();
+                    }
+                    this.lastTap = now;
+                });
 
                 shipCanvas.appendChild(component);
             }
@@ -5117,6 +5718,303 @@ component.addEventListener('touchstart', function(e) {
             }
         }
 
+
+        // Enhanced ship animation with encounter
+function showShipAnimationWithEncounter(encounter) {
+    // Create modal for animation
+    const animationModal = document.createElement('div');
+    animationModal.className = 'modal';
+    animationModal.id = 'animation-modal';
+    animationModal.style.display = 'flex';
+
+    // Create content
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.width = '90%';
+    content.style.maxWidth = '800px';
+    content.style.height = '500px';
+    content.style.padding = '0';
+    content.style.overflow = 'hidden';
+    content.style.backgroundColor = 'black';
+    content.style.borderRadius = '10px';
+    content.style.position = 'relative';
+
+    // Create starfield background with CSS
+    const starfield = document.createElement('div');
+    starfield.style.width = '100%';
+    starfield.style.height = '100%';
+    starfield.style.position = 'absolute';
+    starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+    starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+    starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+    starfield.style.animation = 'flying 20s linear infinite';
+
+    // Create ship container
+    const shipContainer = document.createElement('div');
+    shipContainer.style.position = 'absolute';
+    shipContainer.style.left = '30%';
+    shipContainer.style.top = '50%';
+    shipContainer.style.transform = 'translate(-50%, -50%)';
+    shipContainer.style.width = '200px';
+    shipContainer.style.height = '100px';
+    shipContainer.style.zIndex = '10';
+
+    // Create encounter element
+    const encounterElement = document.createElement('div');
+    encounterElement.style.position = 'absolute';
+    encounterElement.style.right = '25%';
+    encounterElement.style.top = '50%';
+    encounterElement.style.transform = 'translate(50%, -50%)';
+    encounterElement.style.width = '250px';
+    encounterElement.style.height = '150px';
+    encounterElement.style.zIndex = '5';
+    
+    // If encounter has an image, use it
+    if (encounter.image) {
+        encounterElement.style.backgroundImage = `url(${encounter.image})`;
+        encounterElement.style.backgroundSize = 'contain';
+        encounterElement.style.backgroundRepeat = 'no-repeat';
+        encounterElement.style.backgroundPosition = 'center';
+    } else {
+        // Fallback to a basic shape
+        encounterElement.style.backgroundColor = '#e74c3c';
+        encounterElement.style.borderRadius = '10px';
+    }
+
+    // Create encounter info panel
+    const infoPanel = document.createElement('div');
+    infoPanel.className = 'encounter-info';
+    infoPanel.style.position = 'absolute';
+    infoPanel.style.bottom = '20px';
+    infoPanel.style.left = '50%';
+    infoPanel.style.transform = 'translateX(-50%)';
+    infoPanel.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    infoPanel.style.border = '1px solid var(--primary-color)';
+    infoPanel.style.borderRadius = '10px';
+    infoPanel.style.padding = '15px';
+    infoPanel.style.width = '80%';
+    infoPanel.style.color = 'white';
+    infoPanel.style.textAlign = 'center';
+
+    infoPanel.innerHTML = `
+        <h3>${encounter.title}</h3>
+        <p>${encounter.description}</p>
+        <div id="encounter-options" style="display:none;">
+            <h4>Options:</h4>
+            <div class="option-buttons">
+                ${encounter.options.map((option, index) => `
+                    <button class="btn encounter-option" data-index="${index}">${option.text}</button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    // Add elements to DOM
+    content.appendChild(starfield);
+    content.appendChild(shipContainer);
+    content.appendChild(encounterElement);
+    content.appendChild(infoPanel);
+    animationModal.appendChild(content);
+    document.body.appendChild(animationModal);
+
+    // Create ship based on existing design or use default
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        renderShipInContainer(shipContainer, 0.3);
+    } else {
+        // Default ship shape if no design
+        const defaultShip = document.createElement('div');
+        defaultShip.style.width = '100%';
+        defaultShip.style.height = '100%';
+        defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+        defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+        shipContainer.appendChild(defaultShip);
+    }
+
+    // Show encounter options after a delay
+    setTimeout(() => {
+        document.getElementById('encounter-options').style.display = 'block';
+        
+        // Add event listeners to options buttons
+        document.querySelectorAll('.encounter-option').forEach(button => {
+            button.addEventListener('click', function() {
+                handleEncounterOption(encounter, parseInt(this.dataset.index), animationModal);
+            });
+        });
+    }, 2000);
+
+    // Auto close after long timeout (fallback)
+    setTimeout(() => {
+        if (document.body.contains(animationModal)) {
+            animationModal.remove();
+        }
+    }, 15000);
+}
+
+
+        // Helper function to render ship in a container
+        function renderShipInContainer(container, scale = 0.3) {
+            // Define component styles by type
+            const componentStyles = {
+                'power': { color: '#f1c40f', shape: 'power-core' },
+                'engines': { color: '#e67e22', shape: 'engines' },
+                'command': { color: '#3498db', shape: 'trapezoid' },
+                'tactical': { color: '#9b59b6', shape: 'diamond' },
+                'utility': { color: '#1abc9c', shape: 'hexagon' },
+                'hull': { color: '#95a5a6', shape: 'rectangle' }
+            };
+
+            // Create each component
+            gameState.shipDesign.forEach(comp => {
+                const style = componentStyles[comp.type];
+                if (!style) return;
+
+                const element = document.createElement('div');
+                element.style.position = 'absolute';
+                element.style.left = `${comp.x * scale}px`;
+                element.style.top = `${comp.y * scale}px`;
+
+                // Scale width and height
+                const width = (comp.type === 'engines' ? 40 : comp.type === 'hull' ? 60 : 30);
+                const height = (comp.type === 'engines' ? 20 : comp.type === 'hull' ? 30 : 30);
+
+                element.style.width = `${width}px`;
+                element.style.height = `${height}px`;
+
+                // Apply rotation if any
+                if (comp.rotation) {
+                    element.style.transform = `rotate(${comp.rotation}deg)`;
+                }
+
+                const visual = document.createElement('div');
+                visual.className = `component-visual ${style.shape}`;
+                visual.style.backgroundColor = style.color;
+                visual.style.width = '100%';
+                visual.style.height = '100%';
+
+                element.appendChild(visual);
+                container.appendChild(element);
+            });
+        }
+
+// Function to handle encounter option selection
+function handleEncounterOption(encounter, optionIndex, modal) {
+    const option = encounter.options[optionIndex];
+    
+    // Check if ship meets requirements
+    const meetsReq = meetsRequirements(gameState, option.requires);
+    const result = meetsReq ? option.success : option.failure;
+    
+    // Hide the options panel to prevent multiple selections
+    const optionsPanel = document.getElementById('encounter-options');
+    if (optionsPanel) {
+        optionsPanel.style.display = 'none';
+    }
+    
+    // Create result panel
+    const resultPanel = document.createElement('div');
+    resultPanel.className = 'encounter-result';
+    resultPanel.style.position = 'absolute';
+    resultPanel.style.top = '0';
+    resultPanel.style.left = '0';
+    resultPanel.style.right = '0';
+    resultPanel.style.bottom = '0';
+    resultPanel.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    resultPanel.style.color = 'white';
+    resultPanel.style.padding = '20px';
+    resultPanel.style.display = 'flex';
+    resultPanel.style.flexDirection = 'column';
+    resultPanel.style.justifyContent = 'center';
+    resultPanel.style.alignItems = 'center';
+    resultPanel.style.textAlign = 'center';
+    resultPanel.style.zIndex = '20';
+    
+    // Result content
+    resultPanel.innerHTML = `
+        <h2>${meetsReq ? 'Success!' : 'Failure'}</h2>
+        <p>${result.text}</p>
+        <div id="result-details"></div>
+        <button class="btn" id="continue-btn" style="margin-top: 20px;">Continue</button>
+    `;
+    
+    modal.querySelector('.modal-content').appendChild(resultPanel);
+    
+    // Add continue button event
+    document.getElementById('continue-btn').addEventListener('click', () => {
+        // Apply results to game state
+        if (result.credits) {
+            gameState.credits += result.credits;
+            updateCreditsDisplay();
+            
+            // Add credits info to result
+            const detailsEl = document.getElementById('result-details');
+            if (result.credits > 0) {
+                detailsEl.innerHTML += `<p>Earned ${result.credits} credits</p>`;
+            } else if (result.credits < 0) {
+                detailsEl.innerHTML += `<p>Spent ${Math.abs(result.credits)} credits</p>`;
+            }
+        }
+        
+        // Apply durability loss
+        if (result.durabilityLoss) {
+            applyDurabilityLoss(gameState, result.durabilityLoss);
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+            
+            const detailsEl = document.getElementById('result-details');
+            detailsEl.innerHTML += `<p>Ship sustained damage</p>`;
+        }
+        
+        // Process salvage if applicable
+        if (result.salvage && meetsReq) {
+            const salvageResult = processSalvage(result.salvage);
+            if (salvageResult) {
+                const salvageNode = createSalvagedRoom(salvageResult);
+                
+                if (salvageNode) {
+                    const detailsEl = document.getElementById('result-details');
+                    detailsEl.innerHTML += `<p>Salvaged: ${salvageNode.name} (${salvageResult.durability}% durability)</p>`;
+                }
+            }
+        }
+        
+        // Apply repairs if applicable
+        if (result.repair && meetsReq) {
+            const repairValue = result.repair;
+            let roomsRepaired = 0;
+            
+            gameState.nodes.forEach(node => {
+                if (node.durability < 100 - repairValue) {
+                    node.durability += repairValue;
+                    roomsRepaired++;
+                } else if (node.durability < 100) {
+                    node.durability = 100;
+                    roomsRepaired++;
+                }
+            });
+            
+            updateNodeVisuals();
+            
+            if (roomsRepaired > 0) {
+                const detailsEl = document.getElementById('result-details');
+                detailsEl.innerHTML += `<p>${result.success_text || `Repaired ${roomsRepaired} rooms`}</p>`;
+            }
+        }
+        
+        // Completely remove the modal
+        if (document.body.contains(modal)) {
+            modal.remove();
+        }
+        
+        // Cancel any pending timeouts
+        if (window.encounterTimeout) {
+            clearTimeout(window.encounterTimeout);
+        }
+        
+        // Continue job processing
+        continueJobProcessing();
+    });
+}
         // Show ship animation during jobs
         function showShipAnimation() {
             // Create modal for animation
@@ -5253,16 +6151,6 @@ component.addEventListener('touchstart', function(e) {
             }, 10000);
         }
 
-        // // Override runJobs to show animation
-        // const originalRunJobs = runJobs;
-        // runJobs = function() {
-        //     showShipAnimation();
-
-        //     // Call original after animation delay
-        //     setTimeout(() => {
-        //         originalRunJobs();
-        //     }, 3000);
-        // };
 
         // Set up all event listeners
         function setupEventListeners() {
@@ -5472,7 +6360,14 @@ component.addEventListener('touchstart', function(e) {
         }
 
         // Initialize the game when the page loads
-        window.addEventListener('load', initGame);
+        // window.addEventListener('load', initGame);
+
+        // Initialize the encounter system when the game loads
+        window.addEventListener('load', function () {
+            initGame();
+            initEncounterSystem();
+        });
+
     </script>
 </body>
 
