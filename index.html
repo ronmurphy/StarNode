@@ -1618,38 +1618,6 @@
             }
         };
 
-        // Modify the showDiagnostics function to show faction requirements
-        const originalShowDiagnostics = showDiagnostics;
-        showDiagnostics = function () {
-            originalShowDiagnostics();
-
-            // Add faction requirements to diagnostics if a faction is selected
-            if (gameState.selectedFaction) {
-                const faction = factions[gameState.selectedFaction];
-                const statusContent = document.getElementById('status-content');
-
-                // Create faction requirements section
-                let requirementsHTML = `
-            <div>
-                <h3>Faction Requirements</h3>
-                <p>Your ${faction.name} requires:</p>
-                <ul>
-        `;
-
-                // Add requirements
-                for (const [type, count] of Object.entries(faction.requiredRooms)) {
-                    requirementsHTML += `<li>${count} ${type} room(s)</li>`;
-                }
-
-                requirementsHTML += `</ul>
-                <p>Status: ${gameState.factionRequirementsMet ? 'Requirements Met ✓' : 'Requirements Not Met ✗'}</p>
-            </div>
-        `;
-
-                // Append faction requirements to status content
-                statusContent.innerHTML += requirementsHTML;
-            }
-        };
 
         // Check if faction requirements are met
         function checkFactionRequirements() {
@@ -1685,6 +1653,9 @@
                     break;
                 }
             }
+
+            console.log("Room counts:", roomCounts);
+            console.log("Requirements:", requirements);
 
             gameState.factionRequirementsMet = allRequirementsMet;
         }
@@ -2704,16 +2675,16 @@
                 // Power calculations
                 if (node.effectivePowerGeneration > 0) {
                     totalPower += node.effectivePowerGeneration;
-                    powerRooms++;
                 }
                 if (node.effectivePowerConsumption > 0) {
                     usedPower += node.effectivePowerConsumption;
                 }
 
-                // Room type counts
+                // Room type counts - this is the corrected part
                 const roomType = roomTypes.find(r => r.id === node.type);
                 if (roomType) {
-                    if (roomType.type === 'engines') engineRooms++;
+                    if (roomType.type === 'power') powerRooms++;
+                    else if (roomType.type === 'engines') engineRooms++;
                     else if (roomType.type === 'command') commandRooms++;
                     else if (roomType.type === 'tactical') tacticalRooms++;
                     else if (roomType.type === 'utility') utilityRooms++;
@@ -2752,6 +2723,13 @@
             // Calculate net profit
             const netProfit = projectedFiveDayIncome - fiveDayMaintenanceCost;
 
+            const faction = factions[gameState.selectedFaction];
+
+                // Check faction requirements before displaying them
+    if (gameState.selectedFaction) {
+        checkFactionRequirements();
+    }
+
             // Create the diagnostic report
             statusContent.innerHTML = `
         <div>
@@ -2759,14 +2737,14 @@
             <p>Total Rooms: ${totalRooms}</p>
             <p>Average Durability: ${avgDurability}%</p>
             <p>Rooms Needing Repair: ${roomsNeedingRepair}</p>
-        </div>
+        </div><br>
         <div>
             <h3>Power Systems</h3>
             <p>Total Power Generation: ${Math.floor(totalPower)}</p>
             <p>Power Consumption: ${Math.floor(usedPower)}</p>
             <p>Surplus Power: ${Math.floor(surplusPower)}</p>
             <p>Power Efficiency: ${totalPower > 0 ? Math.floor((usedPower / totalPower) * 100) : 0}%</p>
-        </div>
+        </div><br>
         <div>
             <h3>Room Composition</h3>
             <p>Power Systems: ${powerRooms}</p>
@@ -2774,7 +2752,7 @@
             <p>Command Rooms: ${commandRooms}</p>
             <p>Tactical Systems: ${tacticalRooms}</p>
             <p>Utility Rooms: ${utilityRooms}</p>
-        </div>
+        </div><br>
         <div>
             <h3>Financial Projections (5-day run)</h3>
             <p>Estimated Daily Income: ${projectedDailyIncome} credits</p>
@@ -2782,10 +2760,28 @@
             <p>Daily Maintenance Cost: ${dailyMaintenanceCost} credits</p>
             <p>5-Day Maintenance: ${fiveDayMaintenanceCost} credits</p>
             <p>Projected Net Profit: ${netProfit} credits</p>
-        </div>
+        </div><br>
+
+            <div>
+                <h3>Faction Requirements</h3>
+                <p>Your ${faction.name} requires:</p>
+                <ul>
+        `;
+
+            // Add requirements
+            for (const [type, count] of Object.entries(faction.requiredRooms)) {
+                statusContent.innerHTML += `<li>${count} ${type} room(s)</li>`;
+            }
+
+            statusContent.innerHTML += `</ul>
+                <p>Status: ${gameState.factionRequirementsMet ? 'Requirements Met ✓' : 'Requirements Not Met ✗'}</p>
+            </div>
     `;
 
+
+
             statusModal.style.display = 'flex';
+
         }
 
         // Calculate repair costs and show confirmation
