@@ -751,6 +751,147 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Ship Visualization Styles */
+.visualization-container {
+    display: flex;
+    height: calc(100% - 50px);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.ship-canvas-container {
+    flex: 3;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+#ship-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-image: url('https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/space-bg.jpg');
+    background-size: cover;
+}
+
+.components-panel {
+    flex: 1;
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+.component-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.category-btn {
+    background-color: rgba(52, 152, 219, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.category-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.components-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.ship-component {
+    background-color: rgba(52, 152, 219, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 5px;
+    cursor: grab;
+    text-align: center;
+    position: relative;
+}
+
+.ship-component img {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.ship-component.placed {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.component-name {
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+.placed-component {
+    position: absolute;
+    cursor: move;
+    z-index: 5;
+}
+
+.placed-component img {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: contain;
+}
+
+.visual-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Animation styles */
+@keyframes flying {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.flying-animation {
+    animation: flying 20s linear infinite;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .visualization-container {
+        flex-direction: column;
+    }
+    
+    .components-panel {
+        height: 200px;
+    }
+    
+    .ship-canvas-container {
+        height: calc(100% - 200px);
+    }
+    
+    .components-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
     </style>
 </head>
 
@@ -790,6 +931,7 @@
                 <div class="control-btn" id="connect-mode">🔗</div>
                 <div class="control-btn" id="diagnostics-btn" title="Diagnostics">📊</div>
                 <div class="control-btn" id="repair-btn" title="Repair Ship">🔧</div>
+                <div class="control-btn" id="visualize-btn" title="Ship Visualization">🚀</div>
             </div>
         </div>
 
@@ -1036,6 +1178,41 @@
             </div>
         </div>
     </div>
+
+    <!-- Ship Visualization Modal -->
+<div class="modal" id="visual-ship-modal">
+    <div class="modal-content" style="width: 90%; max-width: 900px; height: 80%;">
+        <div class="modal-header">
+            <h2>Ship Visualization</h2>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="visual-controls">
+                <button class="btn" id="auto-arrange-btn">Auto Arrange</button>
+                <button class="btn" id="save-design-btn">Save Design</button>
+            </div>
+            <div class="visualization-container">
+                <div class="ship-canvas-container">
+                    <div id="ship-canvas"></div>
+                </div>
+                <div class="components-panel">
+                    <h3>Ship Components</h3>
+                    <div class="component-categories">
+                        <div class="category-btn active" data-category="all">All</div>
+                        <div class="category-btn" data-category="hull">Hull</div>
+                        <div class="category-btn" data-category="power">Power</div>
+                        <div class="category-btn" data-category="engine">Engines</div>
+                        <div class="category-btn" data-category="command">Command</div>
+                        <div class="category-btn" data-category="tactical">Tactical</div>
+                    </div>
+                    <div class="components-list" id="components-list">
+                        <!-- Components will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
 
@@ -1438,6 +1615,233 @@
             }
         ];
 
+        // Ship component definitions - maps room types to visual components
+const shipComponents = {
+    // Power systems
+    'warp-core': {
+        name: 'Warp Core',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/warp-core.png',
+        category: 'power',
+        width: 100,
+        height: 100,
+        universe: 'star-trek'
+    },
+    'hypermatter-reactor': {
+        name: 'Hypermatter Reactor',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hypermatter.png',
+        category: 'power',
+        width: 90,
+        height: 90,
+        universe: 'star-wars'
+    },
+    'fusion-reactor': {
+        name: 'Fusion Reactor',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fusion-reactor.png',
+        category: 'power',
+        width: 80,
+        height: 80,
+        universe: 'babylon-5'
+    },
+    'holtzman-generator': {
+        name: 'Holtzman Generator',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/holtzman.png',
+        category: 'power',
+        width: 120,
+        height: 120,
+        universe: 'dune'
+    },
+    
+    // Engine systems
+    'impulse-engine': {
+        name: 'Impulse Engines',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/impulse.png',
+        category: 'engine',
+        width: 140,
+        height: 70,
+        universe: 'star-trek'
+    },
+    'ion-engine': {
+        name: 'Ion Engines',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/ion-engine.png',
+        category: 'engine',
+        width: 130,
+        height: 60,
+        universe: 'star-wars'
+    },
+    'gravimetric-engine': {
+        name: 'Gravimetric Engine',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/gravimetric.png',
+        category: 'engine',
+        width: 110,
+        height: 80,
+        universe: 'babylon-5'
+    },
+    'suspensor-drive': {
+        name: 'Suspensor Drive',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/suspensor.png',
+        category: 'engine',
+        width: 130,
+        height: 70,
+        universe: 'dune'
+    },
+    
+    // Command systems
+    'federation-bridge': {
+        name: 'Federation Bridge',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fed-bridge.png',
+        category: 'command',
+        width: 150,
+        height: 80,
+        universe: 'star-trek'
+    },
+    'imperial-bridge': {
+        name: 'Imperial Bridge',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/imp-bridge.png',
+        category: 'command',
+        width: 160,
+        height: 70,
+        universe: 'star-wars'
+    },
+    'earthforce-cic': {
+        name: 'Earthforce CIC',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/cic.png',
+        category: 'command',
+        width: 140,
+        height: 90,
+        universe: 'babylon-5'
+    },
+    'navigation-chamber': {
+        name: 'Navigation Chamber',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/navigation.png',
+        category: 'command',
+        width: 130,
+        height: 100,
+        universe: 'dune'
+    },
+    
+    // Hull sections - available to all
+    'hull-section-1': {
+        name: 'Primary Hull',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull1.png',
+        category: 'hull',
+        width: 200,
+        height: 100,
+        universe: 'all'
+    },
+    'hull-section-2': {
+        name: 'Secondary Hull',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull2.png',
+        category: 'hull',
+        width: 180,
+        height: 90,
+        universe: 'all'
+    },
+    'hull-section-3': {
+        name: 'Connecting Hull',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull3.png',
+        category: 'hull',
+        width: 160,
+        height: 80,
+        universe: 'all'
+    },
+    
+    // Tactical systems
+    'phaser-bank': {
+        name: 'Phaser Banks',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/phaser.png',
+        category: 'tactical',
+        width: 80,
+        height: 40,
+        universe: 'star-trek'
+    },
+    'turbolaser-battery': {
+        name: 'Turbolaser Batteries',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/turbolaser.png',
+        category: 'tactical',
+        width: 90,
+        height: 50,
+        universe: 'star-wars'
+    },
+    'interceptor-grid': {
+        name: 'Interceptor Grid',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/interceptor.png',
+        category: 'tactical',
+        width: 70,
+        height: 40,
+        universe: 'babylon-5'
+    },
+    'lasgun-array': {
+        name: 'Lasgun Array',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/lasgun.png',
+        category: 'tactical',
+        width: 85,
+        height: 45,
+        universe: 'dune'
+    },
+    
+    // Defensive systems mapped to shield generators
+    'shield-generator': {
+        name: 'Shield Generator',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/shields.png',
+        category: 'tactical',
+        width: 100,
+        height: 60,
+        universe: 'star-trek'
+    },
+    'deflector-shield': {
+        name: 'Deflector Shield',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/deflector.png',
+        category: 'tactical',
+        width: 110,
+        height: 70,
+        universe: 'star-wars'
+    }
+};
+
+// Add fallback/generic components for any rooms that don't have specific images
+const genericComponents = {
+    'power': {
+        name: 'Generic Power Core',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-power.png',
+        category: 'power',
+        width: 90,
+        height: 90,
+        universe: 'all'
+    },
+    'engines': {
+        name: 'Generic Engines',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-engine.png',
+        category: 'engine',
+        width: 120,
+        height: 60,
+        universe: 'all'
+    },
+    'command': {
+        name: 'Generic Bridge',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-bridge.png',
+        category: 'command',
+        width: 140,
+        height: 80,
+        universe: 'all'
+    },
+    'tactical': {
+        name: 'Generic Weapons',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-weapon.png',
+        category: 'tactical',
+        width: 80,
+        height: 40,
+        universe: 'all'
+    },
+    'utility': {
+        name: 'Generic Module',
+        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-module.png',
+        category: 'hull',
+        width: 70,
+        height: 70,
+        universe: 'all'
+    }
+};
+
         // DOM elements
         const gridElement = document.getElementById('grid');
         const creditsDisplay = document.getElementById('credits');
@@ -1533,133 +1937,6 @@
                 });
             });
         }
-
-        // Select faction and apply bonuses
-        // function selectFaction(factionId) {
-        //     // Set selected faction
-        //     gameState.selectedFaction = factionId;
-        //     const faction = factions[factionId];
-
-        //     // Apply credit bonus
-        //     gameState.credits += faction.creditBonus;
-        //     updateCreditsDisplay();
-
-        //     // Show notification about faction selection
-        //     showNotification('Faction Selected', `You've chosen a ${faction.name}. Your starting credits have been adjusted to ${gameState.credits}.`);
-
-        //     // Update room list to show restrictions
-        //     renderRoomList();
-
-        //     // Add faction banner to header
-        //     const header = document.querySelector('header');
-        //     const banner = document.createElement('div');
-        //     banner.className = 'faction-banner';
-        //     banner.innerHTML = `<span>${faction.name}</span>`;
-        //     header.appendChild(banner);
-        // }
-
-        // // Update renderRoomList to handle restricted rooms
-        // const originalRenderRoomList = renderRoomList;
-        // renderRoomList = function () {
-        //     originalRenderRoomList();
-
-        //     // If a faction is selected, apply restrictions
-        //     if (gameState.selectedFaction) {
-        //         const faction = factions[gameState.selectedFaction];
-
-        //         // Mark restricted rooms
-        //         faction.restrictedRooms.forEach(roomId => {
-        //             const roomElement = document.querySelector(`.room-item[data-room-id="${roomId}"]`);
-        //             if (roomElement) {
-        //                 roomElement.classList.add('restricted');
-
-        //                 // Remove click event listener
-        //                 const newElement = roomElement.cloneNode(true);
-        //                 roomElement.parentNode.replaceChild(newElement, roomElement);
-
-        //                 // Add tooltip
-        //                 newElement.title = `This room is restricted by your faction: ${faction.name}`;
-        //             }
-        //         });
-        //     }
-        // };
-
-        // // Update runJobs to check faction requirements and apply income multiplier
-        // const originalRunJobs = runJobs;
-        // runJobs = function () {
-        //     // Check if faction requirements are met
-        //     if (gameState.selectedFaction) {
-        //         checkFactionRequirements();
-
-        //         if (!gameState.factionRequirementsMet) {
-        //             showNotification('Cannot Run Jobs', `Your ship does not meet the minimum requirements for a ${factions[gameState.selectedFaction].name}. Check the diagnostics for details.`);
-        //             return;
-        //         }
-        //     }
-
-        //     // Call original function
-        //     originalRunJobs();
-
-        //     // Apply faction income multiplier
-        //     if (gameState.selectedFaction) {
-        //         const multiplier = factions[gameState.selectedFaction].incomeMultiplier;
-        //         const additionalIncome = Math.floor(gameState.lastJobIncome * (multiplier - 1));
-
-        //         if (additionalIncome !== 0) {
-        //             gameState.credits += additionalIncome;
-        //             updateCreditsDisplay();
-
-        //             if (additionalIncome > 0) {
-        //                 showNotification('Faction Bonus', `Your ${factions[gameState.selectedFaction].name} earned a bonus of ${additionalIncome} credits.`);
-        //             } else {
-        //                 showNotification('Independent Penalty', `Your Independent Trader status resulted in a penalty of ${Math.abs(additionalIncome)} credits.`);
-        //             }
-        //         }
-        //     }
-        // };
-
-
-        // // Check if faction requirements are met
-        // function checkFactionRequirements() {
-        //     if (!gameState.selectedFaction) {
-        //         gameState.factionRequirementsMet = true;
-        //         return;
-        //     }
-
-        //     const faction = factions[gameState.selectedFaction];
-        //     const requirements = faction.requiredRooms;
-
-        //     // Count rooms by type
-        //     const roomCounts = {
-        //         power: 0,
-        //         engines: 0,
-        //         command: 0,
-        //         tactical: 0,
-        //         utility: 0
-        //     };
-
-        //     gameState.nodes.forEach(node => {
-        //         const roomType = roomTypes.find(r => r.id === node.type);
-        //         if (roomType && roomType.type) {
-        //             roomCounts[roomType.type]++;
-        //         }
-        //     });
-
-        //     // Check if all requirements are met
-        //     let allRequirementsMet = true;
-        //     for (const [type, count] of Object.entries(requirements)) {
-        //         if (roomCounts[type] < count) {
-        //             allRequirementsMet = false;
-        //             break;
-        //         }
-        //     }
-
-        //     console.log("Room counts:", roomCounts);
-        //     console.log("Requirements:", requirements);
-
-        //     gameState.factionRequirementsMet = allRequirementsMet;
-        // }
-
 
         function selectFaction(factionId) {
             // Set selected faction
@@ -3225,6 +3502,9 @@
 
                 // Run jobs for specified number of days
         function runJobs() {
+
+            showShipAnimation();
+
             const daysInput = document.getElementById('job-days');
             const days = parseInt(daysInput.value);
         
@@ -3638,6 +3918,700 @@
             updateNodeInfoPanel();
         }
 
+        // Initialize the visualization
+function initShipVisualization() {
+    const visualModal = document.getElementById('visual-ship-modal');
+    const shipCanvas = document.getElementById('ship-canvas');
+    const componentsList = document.getElementById('components-list');
+    
+    // Clear previous contents
+    shipCanvas.innerHTML = '';
+    componentsList.innerHTML = '';
+    
+    // Store positioned components
+    gameState.shipDesign = gameState.shipDesign || [];
+    
+// Get unique room types in the ship
+const uniqueRoomTypes = new Set();
+const roomTypesCount = {};
+
+gameState.nodes.forEach(node => {
+    const room = roomTypes.find(r => r.id === node.type);
+    if (room) {
+        uniqueRoomTypes.add(room.id);
+        roomTypesCount[room.id] = (roomTypesCount[room.id] || 0) + 1;
+    }
+});
+    
+    // Add hull sections by default
+    const availableComponents = [...Object.entries(shipComponents)
+        .filter(([id, component]) => id.startsWith('hull-'))
+        .map(([id, component]) => ({id, ...component}))];
+    
+    // Add components for existing room types
+    gameState.nodes.forEach(node => {
+        if (shipComponents[node.type]) {
+            availableComponents.push({
+                id: node.type,
+                ...shipComponents[node.type],
+                count: roomTypesCount[node.type] || 1
+            });
+        } else {
+            // Find the room type
+            const room = roomTypes.find(r => r.id === node.type);
+            if (room && genericComponents[room.type]) {
+                availableComponents.push({
+                    id: node.type,
+                    ...genericComponents[room.type],
+                    count: roomTypesCount[node.type] || 1
+                });
+            }
+        }
+    });
+    
+    // Render available components
+    availableComponents.forEach(component => {
+        const componentEl = document.createElement('div');
+        componentEl.className = 'ship-component';
+        componentEl.dataset.componentId = component.id;
+        componentEl.dataset.category = component.category;
+        
+        componentEl.innerHTML = `
+            <img src="${component.image}" alt="${component.name}">
+            <div class="component-name">${component.name}</div>
+            ${component.count ? `<div class="component-count">x${component.count}</div>` : ''}
+        `;
+        
+        // Add drag start event
+        componentEl.addEventListener('mousedown', startDragComponent);
+        componentEl.addEventListener('touchstart', startDragComponentTouch, { passive: false });
+        
+        componentsList.appendChild(componentEl);
+    });
+    
+    // Restore saved design if any
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        gameState.shipDesign.forEach(item => {
+            placeComponent(item.id, item.x, item.y, item.rotation);
+        });
+    }
+    
+    // Apply category filter
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Filter components
+            const category = btn.dataset.category;
+            document.querySelectorAll('.ship-component').forEach(comp => {
+                if (category === 'all' || comp.dataset.category === category) {
+                    comp.style.display = '';
+                } else {
+                    comp.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Auto-arrange button
+    document.getElementById('auto-arrange-btn').addEventListener('click', autoArrangeShip);
+    
+    // Save design button
+    document.getElementById('save-design-btn').addEventListener('click', saveShipDesign);
+    
+    // Show the modal
+    visualModal.style.display = 'flex';
+}
+
+// Start dragging a component
+function startDragComponent(e) {
+    const component = e.currentTarget;
+    const componentId = component.dataset.componentId;
+    
+    // Create a drag image
+    const dragImage = document.createElement('div');
+    dragImage.className = 'placed-component dragging';
+    dragImage.dataset.componentId = componentId;
+    dragImage.innerHTML = component.innerHTML;
+    
+    // Get component data
+    const componentData = shipComponents[componentId] || 
+                         genericComponents[component.dataset.category];
+    
+    // Position at mouse/touch position
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    dragImage.style.width = `${componentData.width}px`;
+    dragImage.style.height = `${componentData.height}px`;
+    
+    dragImage.style.left = `${e.clientX - canvasRect.left - componentData.width / 2}px`;
+    dragImage.style.top = `${e.clientY - canvasRect.top - componentData.height / 2}px`;
+    
+    shipCanvas.appendChild(dragImage);
+    
+    // Add mousemove and mouseup events to document
+    document.addEventListener('mousemove', dragComponent);
+    document.addEventListener('mouseup', dropComponent);
+    
+    // Mark the source as being dragged
+    component.classList.add('dragging-source');
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Mobile touch version for drag start
+function startDragComponentTouch(e) {
+    const touch = e.touches[0];
+    const component = e.currentTarget;
+    const componentId = component.dataset.componentId;
+    
+    // Create a drag image
+    const dragImage = document.createElement('div');
+    dragImage.className = 'placed-component dragging';
+    dragImage.dataset.componentId = componentId;
+    dragImage.innerHTML = component.innerHTML;
+    
+    // Get component data
+    const componentData = shipComponents[componentId] || 
+                         genericComponents[component.dataset.category];
+    
+    // Position at touch position
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    dragImage.style.width = `${componentData.width}px`;
+    dragImage.style.height = `${componentData.height}px`;
+    
+    dragImage.style.left = `${touch.clientX - canvasRect.left - componentData.width / 2}px`;
+    dragImage.style.top = `${touch.clientY - canvasRect.top - componentData.height / 2}px`;
+    
+    shipCanvas.appendChild(dragImage);
+    
+    // Add touch events to document
+    document.addEventListener('touchmove', dragComponentTouch, { passive: false });
+    document.addEventListener('touchend', dropComponentTouch);
+    
+    // Mark the source as being dragged
+    component.classList.add('dragging-source');
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drag component with mouse
+function dragComponent(e) {
+    const dragImage = document.querySelector('.placed-component.dragging');
+    if (!dragImage) return;
+    
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    // Get component dimensions
+    const width = parseInt(dragImage.style.width);
+    const height = parseInt(dragImage.style.height);
+    
+    // Update position
+    dragImage.style.left = `${e.clientX - canvasRect.left - width / 2}px`;
+    dragImage.style.top = `${e.clientY - canvasRect.top - height / 2}px`;
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drag component with touch
+function dragComponentTouch(e) {
+    const touch = e.touches[0];
+    const dragImage = document.querySelector('.placed-component.dragging');
+    if (!dragImage) return;
+    
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    // Get component dimensions
+    const width = parseInt(dragImage.style.width);
+    const height = parseInt(dragImage.style.height);
+    
+    // Update position
+    dragImage.style.left = `${touch.clientX - canvasRect.left - width / 2}px`;
+    dragImage.style.top = `${touch.clientY - canvasRect.top - height / 2}px`;
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drop component with mouse
+function dropComponent(e) {
+    const dragImage = document.querySelector('.placed-component.dragging');
+    if (!dragImage) return;
+    
+    const componentId = dragImage.dataset.componentId;
+    const x = parseInt(dragImage.style.left);
+    const y = parseInt(dragImage.style.top);
+    
+    // Remove the temporary drag image
+    dragImage.remove();
+    
+    // Remove dragging class from source
+    document.querySelectorAll('.dragging-source').forEach(el => {
+        el.classList.remove('dragging-source');
+    });
+    
+    // Place a permanent component
+    placeComponent(componentId, x, y, 0);
+    
+    // Remove the event listeners
+    document.removeEventListener('mousemove', dragComponent);
+    document.removeEventListener('mouseup', dropComponent);
+    
+    // Save the current design
+    updateShipDesign();
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drop component with touch
+function dropComponentTouch(e) {
+    const dragImage = document.querySelector('.placed-component.dragging');
+    if (!dragImage) return;
+    
+    const componentId = dragImage.dataset.componentId;
+    const x = parseInt(dragImage.style.left);
+    const y = parseInt(dragImage.style.top);
+    
+    // Remove the temporary drag image
+    dragImage.remove();
+    
+    // Remove dragging class from source
+    document.querySelectorAll('.dragging-source').forEach(el => {
+        el.classList.remove('dragging-source');
+    });
+    
+    // Place a permanent component
+    placeComponent(componentId, x, y, 0);
+    
+    // Remove the event listeners
+    document.removeEventListener('touchmove', dragComponentTouch);
+    document.removeEventListener('touchend', dropComponentTouch);
+    
+    // Save the current design
+    updateShipDesign();
+    
+    // Prevent default behavior
+    if (e.cancelable) e.preventDefault();
+}
+
+// Place a component at a specific position
+function placeComponent(componentId, x, y, rotation) {
+    const shipCanvas = document.getElementById('ship-canvas');
+    
+    // Get component data
+    const componentData = shipComponents[componentId] || 
+                         genericComponents[componentId.split('-')[0]];
+    
+    if (!componentData) return;
+    
+    // Create the component
+    const component = document.createElement('div');
+    component.className = 'placed-component';
+    component.dataset.componentId = componentId;
+    
+    component.innerHTML = `<img src="${componentData.image}" alt="${componentData.name}">`;
+    
+    // Position
+    component.style.left = `${x}px`;
+    component.style.top = `${y}px`;
+    component.style.width = `${componentData.width}px`;
+    component.style.height = `${componentData.height}px`;
+    
+    // Apply rotation if any
+    if (rotation) {
+        component.style.transform = `rotate(${rotation}deg)`;
+    }
+    
+    // Make it draggable
+    component.addEventListener('mousedown', startDragPlacedComponent);
+    component.addEventListener('touchstart', startDragPlacedComponentTouch, { passive: false });
+    
+    // Right click to rotate
+    component.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        
+        // Get current rotation
+        const style = window.getComputedStyle(component);
+        const matrix = new DOMMatrix(style.transform);
+        let angle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+        
+        // Add 45 degrees
+        angle = (angle + 45) % 360;
+        
+        // Apply rotation
+        component.style.transform = `rotate(${angle}deg)`;
+        
+        // Update the design
+        updateShipDesign();
+    });
+    
+    // Add to canvas
+    shipCanvas.appendChild(component);
+}
+
+// Start dragging a placed component
+function startDragPlacedComponent(e) {
+    const component = e.currentTarget;
+    
+    // Set as dragging
+    component.classList.add('dragging');
+    
+    // Store initial position
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    const offsetX = e.clientX - canvasRect.left - parseInt(component.style.left);
+    const offsetY = e.clientY - canvasRect.top - parseInt(component.style.top);
+    
+    component.dataset.offsetX = offsetX;
+    component.dataset.offsetY = offsetY;
+    
+    // Add move and drop events
+    document.addEventListener('mousemove', dragPlacedComponent);
+    document.addEventListener('mouseup', dropPlacedComponent);
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Start dragging a placed component (touch)
+function startDragPlacedComponentTouch(e) {
+    const touch = e.touches[0];
+    const component = e.currentTarget;
+    
+    // Set as dragging
+    component.classList.add('dragging');
+    
+    // Store initial position
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    const offsetX = touch.clientX - canvasRect.left - parseInt(component.style.left);
+    const offsetY = touch.clientY - canvasRect.top - parseInt(component.style.top);
+    
+    component.dataset.offsetX = offsetX;
+    component.dataset.offsetY = offsetY;
+    
+    // Add move and drop events
+    document.addEventListener('touchmove', dragPlacedComponentTouch, { passive: false });
+    document.addEventListener('touchend', dropPlacedComponentTouch);
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drag a placed component
+function dragPlacedComponent(e) {
+    const component = document.querySelector('.placed-component.dragging');
+    if (!component) return;
+    
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    const offsetX = parseInt(component.dataset.offsetX);
+    const offsetY = parseInt(component.dataset.offsetY);
+    
+    // Update position
+    component.style.left = `${e.clientX - canvasRect.left - offsetX}px`;
+    component.style.top = `${e.clientY - canvasRect.top - offsetY}px`;
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drag a placed component (touch)
+function dragPlacedComponentTouch(e) {
+    const touch = e.touches[0];
+    const component = document.querySelector('.placed-component.dragging');
+    if (!component) return;
+    
+    const shipCanvas = document.getElementById('ship-canvas');
+    const canvasRect = shipCanvas.getBoundingClientRect();
+    
+    const offsetX = parseInt(component.dataset.offsetX);
+    const offsetY = parseInt(component.dataset.offsetY);
+    
+    // Update position
+    component.style.left = `${touch.clientX - canvasRect.left - offsetX}px`;
+    component.style.top = `${touch.clientY - canvasRect.top - offsetY}px`;
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drop a placed component
+function dropPlacedComponent(e) {
+    const component = document.querySelector('.placed-component.dragging');
+    if (!component) return;
+    
+    // Remove dragging class
+    component.classList.remove('dragging');
+    
+    // Remove event listeners
+    document.removeEventListener('mousemove', dragPlacedComponent);
+    document.removeEventListener('mouseup', dropPlacedComponent);
+    
+    // Update the design
+    updateShipDesign();
+    
+    // Prevent default behavior
+    e.preventDefault();
+}
+
+// Drop a placed component (touch)
+function dropPlacedComponentTouch(e) {
+    const component = document.querySelector('.placed-component.dragging');
+    if (!component) return;
+    
+    // Remove dragging class
+    component.classList.remove('dragging');
+    
+    // Remove event listeners
+    document.removeEventListener('touchmove', dragPlacedComponentTouch);
+    document.removeEventListener('touchend', dropPlacedComponentTouch);
+    
+    // Update the design
+    updateShipDesign();
+    
+    // Prevent default behavior
+    if (e.cancelable) e.preventDefault();
+}
+
+// Update the ship design
+function updateShipDesign() {
+    const components = document.querySelectorAll('.placed-component:not(.dragging)');
+    gameState.shipDesign = [];
+    
+    components.forEach(component => {
+        // Get rotation
+        const style = window.getComputedStyle(component);
+        const matrix = new DOMMatrix(style.transform);
+        const angle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+        
+        gameState.shipDesign.push({
+            id: component.dataset.componentId,
+            x: parseInt(component.style.left),
+            y: parseInt(component.style.top),
+            rotation: angle
+        });
+    });
+}
+
+// Auto-arrange the ship
+function autoArrangeShip() {
+    const shipCanvas = document.getElementById('ship-canvas');
+    
+    // Clear existing components
+    document.querySelectorAll('.placed-component').forEach(comp => comp.remove());
+    
+    // Get canvas dimensions
+    const width = shipCanvas.clientWidth;
+    const height = shipCanvas.clientHeight;
+    
+    // Group components by category
+    const hullComponents = Object.entries(shipComponents)
+        .filter(([id, comp]) => comp.category === 'hull')
+        .map(([id, comp]) => ({id, ...comp}));
+    
+    const powerComponents = [];
+    const engineComponents = [];
+    const commandComponents = [];
+    const tacticalComponents = [];
+    
+    // Get components from rooms
+    gameState.nodes.forEach(node => {
+        const roomType = roomTypes.find(r => r.id === node.type);
+        if (!roomType) return;
+        
+        let component;
+        if (shipComponents[node.type]) {
+            component = {id: node.type, ...shipComponents[node.type]};
+        } else if (genericComponents[roomType.type]) {
+            component = {id: node.type, ...genericComponents[roomType.type]};
+        } else {
+            return;
+        }
+        
+        if (component.category === 'power') {
+            powerComponents.push(component);
+        } else if (component.category === 'engine') {
+            engineComponents.push(component);
+        } else if (component.category === 'command') {
+            commandComponents.push(component);
+        } else if (component.category === 'tactical') {
+            tacticalComponents.push(component);
+        }
+    });
+    
+    // Place hull sections
+    if (hullComponents.length > 0) {
+        const mainHull = hullComponents[0];
+        placeComponent(mainHull.id, (width - mainHull.width) / 2, height / 2 - 50, 0);
+        
+        if (hullComponents.length > 1) {
+            const secondaryHull = hullComponents[1];
+            placeComponent(secondaryHull.id, (width - secondaryHull.width) / 2, height / 2 + 50, 0);
+        }
+    }
+    
+    // Place command components
+    if (commandComponents.length > 0) {
+        const bridge = commandComponents[0];
+        placeComponent(bridge.id, (width - bridge.width) / 2, height / 3 - 50, 0);
+    }
+    
+    // Place power components
+    powerComponents.forEach((power, index) => {
+        const x = width / 2 - power.width / 2 + (index - powerComponents.length / 2) * 120;
+        placeComponent(power.id, x, height / 2, 0);
+    });
+    
+    // Place engine components
+    engineComponents.forEach((engine, index) => {
+        const x = width / 2 - engine.width / 2 + (index - engineComponents.length / 2) * 140;
+        placeComponent(engine.id, x, height * 2/3 + 50, 0);
+    });
+    
+    // Place tactical components
+    tacticalComponents.forEach((tactical, index) => {
+        const side = index % 2 === 0 ? -1 : 1;
+        const tier = Math.floor(index / 2);
+        const x = width / 2 + side * (150 + tactical.width / 2);
+        const y = height / 3 + tier * 70;
+        placeComponent(tactical.id, x, y, 0);
+    });
+    
+    // Save the design
+    updateShipDesign();
+}
+
+// Save the ship design
+function saveShipDesign() {
+    // Already saved in gameState.shipDesign
+    showNotification('Design Saved', 'Your ship design has been saved.');
+}
+
+// Show ship animation during jobs
+function showShipAnimation() {
+    // Create modal for animation
+    const animationModal = document.createElement('div');
+    animationModal.className = 'modal';
+    animationModal.id = 'animation-modal';
+    animationModal.style.display = 'flex';
+    
+    // Create content
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.width = '90%';
+    content.style.maxWidth = '800px';
+    content.style.height = '400px';
+    content.style.padding = '0';
+    content.style.overflow = 'hidden';
+    content.style.backgroundColor = 'black';
+    content.style.borderRadius = '10px';
+    content.style.position = 'relative';
+    
+    // Create starfield background
+    const starfield = document.createElement('div');
+    starfield.style.width = '100%';
+    starfield.style.height = '100%';
+    starfield.style.position = 'absolute';
+    starfield.style.backgroundImage = 'url("https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/starfield.jpg")';
+    starfield.style.backgroundSize = 'cover';
+    starfield.style.backgroundRepeat = 'repeat-x';
+    starfield.className = 'flying-animation';
+    
+    // Create ship container
+    const shipContainer = document.createElement('div');
+    shipContainer.style.position = 'absolute';
+    shipContainer.style.width = '100%';
+    shipContainer.style.height = '100%';
+    shipContainer.style.display = 'flex';
+    shipContainer.style.alignItems = 'center';
+    shipContainer.style.justifyContent = 'center';
+    
+    // Add ship image or components
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        // Create a copy of each component
+        gameState.shipDesign.forEach(item => {
+            const component = document.createElement('div');
+            component.className = 'placed-component';
+            component.style.position = 'absolute';
+            
+            // Get component data
+            const componentData = shipComponents[item.id] || 
+                               genericComponents[item.id.split('-')[0]];
+            
+            if (!componentData) return;
+            
+            component.innerHTML = `<img src="${componentData.image}" alt="${componentData.name}">`;
+            
+            // Position relative to center
+            const centerX = 400;
+            const centerY = 200;
+            component.style.left = `${centerX - 150 + item.x / 4}px`;
+            component.style.top = `${centerY - 75 + item.y / 4}px`;
+            component.style.width = `${componentData.width * 0.5}px`;
+            component.style.height = `${componentData.height * 0.5}px`;
+            
+            // Apply rotation
+            if (item.rotation) {
+                component.style.transform = `rotate(${item.rotation}deg)`;
+            }
+            
+            shipContainer.appendChild(component);
+        });
+    } else {
+        // Use default ship image
+        const shipImage = document.createElement('img');
+        shipImage.src = 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/default-ship.png';
+        shipImage.style.maxWidth = '300px';
+        shipImage.style.maxHeight = '150px';
+        shipContainer.appendChild(shipImage);
+    }
+    
+    // Add elements to DOM
+    content.appendChild(starfield);
+    content.appendChild(shipContainer);
+    animationModal.appendChild(content);
+    document.body.appendChild(animationModal);
+    
+    // Add close button with delay
+    setTimeout(() => {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn';
+        closeBtn.style.position = 'absolute';
+        closeBtn.style.bottom = '10px';
+        closeBtn.style.right = '10px';
+        closeBtn.textContent = 'Continue';
+        
+        closeBtn.addEventListener('click', () => {
+            animationModal.remove();
+        });
+        
+        content.appendChild(closeBtn);
+    }, 3000);
+    
+    // Auto close after 10 seconds
+    setTimeout(() => {
+        if (document.body.contains(animationModal)) {
+            animationModal.remove();
+        }
+    }, 10000);
+}
+
+
         // Set up all event listeners
         function setupEventListeners() {
             // Grid events
@@ -3822,6 +4796,13 @@
                 document.getElementById('load-modal').style.display = 'none';
                 stopQRScanner();
             });
+
+            document.getElementById('visualize-btn').addEventListener('click', initShipVisualization);
+
+// Close button for visualization modal
+document.querySelector('#visual-ship-modal .close-btn').addEventListener('click', () => {
+    document.getElementById('visual-ship-modal').style.display = 'none';
+});
 
             document.addEventListener('keydown', (e) => {
                 // Only process shortcuts if no input field is active
