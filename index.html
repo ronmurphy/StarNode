@@ -753,145 +753,774 @@
         }
 
         /* Ship Visualization Styles */
-.visualization-container {
-    display: flex;
-    height: calc(100% - 50px);
-    gap: 15px;
-    margin-top: 15px;
-}
+        .visualization-container {
+            display: flex;
+            height: calc(100% - 50px);
+            gap: 15px;
+            margin-top: 15px;
+        }
 
-.ship-canvas-container {
-    flex: 3;
-    border: 2px solid var(--primary-color);
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-}
+        .ship-canvas-container {
+            flex: 3;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-#ship-canvas {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background-image: url('https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/space-bg.jpg');
-    background-size: cover;
-}
+        #ship-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: url('https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/space-bg.jpg');
+            background-size: cover;
+        }
 
-.components-panel {
-    flex: 1;
-    border: 1px solid var(--primary-color);
-    border-radius: 8px;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
-}
+        .components-panel {
+            flex: 1;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
 
-.component-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-}
+        .component-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
 
-.category-btn {
-    background-color: rgba(52, 152, 219, 0.1);
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 12px;
-}
+        .category-btn {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
 
-.category-btn.active {
-    background-color: var(--primary-color);
-    color: white;
-}
+        .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
 
-.components-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    max-height: calc(100% - 60px);
-    overflow-y: auto;
-}
+        .components-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: calc(100% - 60px);
+            overflow-y: auto;
+        }
 
-.ship-component {
-    background-color: rgba(52, 152, 219, 0.1);
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
-    padding: 5px;
-    cursor: grab;
-    text-align: center;
-    position: relative;
-}
+        .ship-component {
+            background-color: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 5px;
+            cursor: grab;
+            text-align: center;
+            position: relative;
+        }
 
-.ship-component img {
-    max-width: 100%;
-    max-height: 80px;
-    object-fit: contain;
-}
+        .ship-component img {
+            max-width: 100%;
+            max-height: 80px;
+            object-fit: contain;
+        }
 
-.ship-component.placed {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+        .ship-component.placed {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-.component-name {
-    font-size: 10px;
-    margin-top: 5px;
-}
+        .component-name {
+            font-size: 10px;
+            margin-top: 5px;
+        }
 
-.placed-component {
-    position: absolute;
-    cursor: move;
-    z-index: 5;
-}
+        .placed-component {
+            position: absolute;
+            cursor: move;
+            z-index: 5;
+        }
 
-.placed-component img {
-    max-width: 150px;
-    max-height: 150px;
-    object-fit: contain;
-}
+        .placed-component img {
+            max-width: 150px;
+            max-height: 150px;
+            object-fit: contain;
+        }
 
-.visual-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
+        .visual-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-/* Animation styles */
-@keyframes flying {
-    0% {
-        background-position: 0 0;
-    }
-    100% {
-        background-position: 1000px 0;
-    }
-}
+        /* Animation styles */
+        @keyframes flying {
+            0% {
+                background-position: 0 0;
+            }
 
-.flying-animation {
-    animation: flying 20s linear infinite;
-}
+            100% {
+                background-position: 1000px 0;
+            }
+        }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .visualization-container {
-        flex-direction: column;
-    }
-    
-    .components-panel {
-        height: 200px;
-    }
-    
-    .ship-canvas-container {
-        height: calc(100% - 200px);
-    }
-    
-    .components-list {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
+        .flying-animation {
+            animation: flying 20s linear infinite;
+        }
 
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .visualization-container {
+                flex-direction: column;
+            }
+
+            .components-panel {
+                height: 200px;
+            }
+
+            .ship-canvas-container {
+                height: calc(100% - 200px);
+            }
+
+            .components-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .component-visual.power-core {
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #fff 0%, #f1c40f 30%, #f39c12 70%, #e67e22 100%);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+        }
+
+        .component-visual.engines {
+            border-radius: 5px;
+            background: linear-gradient(to right, #e67e22 70%, #e74c3c 70%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component-visual.engines:after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            width: 30%;
+            height: 60%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(231, 76, 60, 0.5) 70%, rgba(0, 0, 0, 0) 100%);
+            animation: engineGlow 2s infinite alternate;
+        }
+
+        @keyframes engineGlow {
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .component-visual.trapezoid {
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+            background: linear-gradient(to bottom, #3498db 70%, #2980b9 70%);
+        }
+
+        .component-visual.diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            background: radial-gradient(circle at center, #9b59b6 50%, #8e44ad 100%);
+        }
+
+        .component-visual.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+        }
+
+        .component-visual.rectangle {
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #95a5a6 0%, #7f8c8d 100%);
+            border: 2px solid #bdc3c7;
+        }
+
+        /* POWER SYSTEMS */
+        /* Basic power core with pulsing effect */
+        .component-visual.power-core {
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #fff 0%, #f1c40f 30%, #f39c12 70%, #e67e22 100%);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            animation: powerPulse 4s infinite alternate;
+            position: relative;
+        }
+
+        /* Add central detail */
+        .component-visual.power-core::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: 30%;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        @keyframes powerPulse {
+            0% {
+                box-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 25px rgba(241, 196, 15, 0.9);
+            }
+
+            100% {
+                box-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            }
+        }
+
+        /* Advanced Warp Core (federation) */
+        .component-visual.warp-core {
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #fff 0%, #3498db 20%, #2980b9 70%, #1a5276 100%);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+            position: relative;
+            animation: warpPulse 3s infinite alternate;
+        }
+
+        .component-visual.warp-core::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 10%;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .component-visual.warp-core::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            width: 60%;
+            height: 10%;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        @keyframes warpPulse {
+            0% {
+                box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+            }
+
+            100% {
+                box-shadow: 0 0 30px rgba(52, 152, 219, 1);
+            }
+        }
+
+        /* Imperial Reactor (star wars) */
+        .component-visual.hypermatter-reactor {
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #fff 0%, #c0392b 30%, #922b21 70%, #641e16 100%);
+            box-shadow: 0 0 15px rgba(192, 57, 43, 0.7);
+            position: relative;
+        }
+
+        .component-visual.hypermatter-reactor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 4px solid rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+
+        .component-visual.hypermatter-reactor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            height: 40%;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: reactorGlow 2s infinite alternate;
+        }
+
+        @keyframes reactorGlow {
+            0% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* ENGINE SYSTEMS */
+        .component-visual.engines {
+            border-radius: 5px;
+            background: linear-gradient(to right, #e67e22 70%, #e74c3c 70%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component-visual.engines::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            width: 30%;
+            height: 60%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(231, 76, 60, 0.5) 70%, rgba(0, 0, 0, 0) 100%);
+            animation: engineGlow 2s infinite alternate;
+        }
+
+        /* Federation Impulse Engine */
+        .component-visual.impulse-engine {
+            border-radius: 10px;
+            background: linear-gradient(to right, #34495e 70%, #2c3e50 70%);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #5D6D7E;
+        }
+
+        .component-visual.impulse-engine::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 10%;
+            width: 50%;
+            height: 70%;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            border-radius: 5px;
+        }
+
+        .component-visual.impulse-engine::after {
+            content: '';
+            position: absolute;
+            right: 5%;
+            top: 30%;
+            width: 25%;
+            height: 40%;
+            background: radial-gradient(ellipse at center, rgba(52, 152, 219, 1) 0%, rgba(41, 128, 185, 0.7) 60%, rgba(0, 0, 0, 0) 100%);
+            border-radius: 50%;
+            animation: impulseGlow 1.5s infinite alternate;
+        }
+
+        @keyframes impulseGlow {
+            0% {
+                opacity: 0.7;
+                box-shadow: 0 0 5px rgba(52, 152, 219, 0.7);
+            }
+
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 15px rgba(52, 152, 219, 1);
+            }
+        }
+
+        /* Imperial Ion Engine */
+        .component-visual.ion-engine {
+            border-radius: 5px;
+            background: linear-gradient(to right, #2c3e50 80%, #c0392b 80%);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #566573;
+        }
+
+        .component-visual.ion-engine::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 5%;
+            width: 70%;
+            height: 70%;
+            background: linear-gradient(to right, #34495e, #2c3e50);
+            border-radius: 3px;
+            border-top: 2px solid #566573;
+            border-bottom: 2px solid #566573;
+        }
+
+        .component-visual.ion-engine::after {
+            content: '';
+            position: absolute;
+            right: 3%;
+            top: 25%;
+            width: 15%;
+            height: 50%;
+            background: radial-gradient(ellipse at center, rgba(231, 76, 60, 1) 0%, rgba(192, 57, 43, 0.7) 60%, rgba(0, 0, 0, 0) 100%);
+            animation: ionGlow 1s infinite alternate;
+        }
+
+        @keyframes ionGlow {
+            0% {
+                opacity: 0.7;
+                box-shadow: 0 0 5px rgba(231, 76, 60, 0.7);
+            }
+
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 15px rgba(231, 76, 60, 1);
+            }
+        }
+
+        /* COMMAND SYSTEMS */
+        .component-visual.trapezoid {
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+            background: linear-gradient(to bottom, #3498db 70%, #2980b9 70%);
+            position: relative;
+        }
+
+        /* Add window details to command rooms */
+        .component-visual.trapezoid::before {
+            content: '';
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 20%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Federation Bridge */
+        .component-visual.federation-bridge {
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            background: linear-gradient(to bottom, #3498db 60%, #2980b9 60%);
+            position: relative;
+        }
+
+        .component-visual.federation-bridge::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 15%;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+        }
+
+        .component-visual.federation-bridge::after {
+            content: '';
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 10%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        /* Imperial Bridge */
+        .component-visual.imperial-bridge {
+            clip-path: polygon(0% 30%, 100% 30%, 85% 100%, 15% 100%);
+            background: linear-gradient(to bottom, #34495e 50%, #2c3e50 50%);
+            position: relative;
+        }
+
+        .component-visual.imperial-bridge::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 15%;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+        }
+
+        .component-visual.imperial-bridge::after {
+            content: '';
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 5%;
+            background: rgba(192, 57, 43, 0.5);
+            box-shadow: 0 0 5px rgba(192, 57, 43, 0.5);
+        }
+
+        /* TACTICAL SYSTEMS */
+        .component-visual.diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            background: radial-gradient(circle at center, #9b59b6 50%, #8e44ad 100%);
+            position: relative;
+        }
+
+        /* Weapons with targeting graphics */
+        .component-visual.diamond::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .component-visual.diamond::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10%;
+            height: 10%;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+        }
+
+        /* Phaser Bank */
+        .component-visual.phaser-bank {
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            position: relative;
+        }
+
+        .component-visual.phaser-bank::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.7);
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+            animation: phaserCharge 3s infinite;
+        }
+
+        @keyframes phaserCharge {
+            0% {
+                opacity: 0.3;
+                width: 30%;
+            }
+
+            50% {
+                opacity: 1;
+                width: 70%;
+            }
+
+            100% {
+                opacity: 0.3;
+                width: 30%;
+            }
+        }
+
+        /* Turbolaser Battery */
+        .component-visual.turbolaser-battery {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+            position: relative;
+        }
+
+        .component-visual.turbolaser-battery::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 25%;
+            width: 4px;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-50%);
+        }
+
+        .component-visual.turbolaser-battery::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            width: 4px;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-50%);
+        }
+
+        /* UTILITY SYSTEMS */
+        .component-visual.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+        }
+
+        /* Deflector Array */
+        .component-visual.deflector-array {
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            position: relative;
+        }
+
+        .component-visual.deflector-array::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle at center, rgba(52, 152, 219, 0.3) 0%, rgba(41, 128, 185, 0.1) 70%, rgba(0, 0, 0, 0) 100%);
+            border-radius: 50%;
+            animation: deflectorPulse 4s infinite;
+        }
+
+        @keyframes deflectorPulse {
+            0% {
+                width: 50%;
+                height: 50%;
+                opacity: 0.7;
+            }
+
+            50% {
+                width: 70%;
+                height: 70%;
+                opacity: 0.3;
+            }
+
+            100% {
+                width: 50%;
+                height: 50%;
+                opacity: 0.7;
+            }
+        }
+
+        /* Jump Gate Array */
+        .component-visual.jump-gate-array {
+            clip-path: polygon(50% 0%, 80% 30%, 80% 70%, 50% 100%, 20% 70%, 20% 30%);
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component-visual.jump-gate-array::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .component-visual.jump-gate-array::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle at center, rgba(155, 89, 182, 0.3) 0%, rgba(142, 68, 173, 0.1) 70%, rgba(0, 0, 0, 0) 100%);
+            border-radius: 50%;
+            animation: jumpgatePulse 3s infinite alternate;
+        }
+
+        @keyframes jumpgatePulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.7;
+            }
+        }
+
+        /* HULL SECTIONS - DIFFERENTIATED */
+        .component-visual.rectangle {
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #95a5a6 0%, #7f8c8d 100%);
+            border: 2px solid #bdc3c7;
+        }
+
+        /* Primary Hull - Blue tinted with special marker */
+        .component-visual.primary-hull {
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #7fb3d5 0%, #2980b9 100%);
+            border: 2px solid #d6eaf8;
+            position: relative;
+        }
+
+        .component-visual.primary-hull::before {
+            content: '1';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Secondary Hull - Red tinted with special marker */
+        .component-visual.secondary-hull {
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #ec7063 0%, #c0392b 100%);
+            border: 2px solid #f9ebea;
+            position: relative;
+        }
+
+        .component-visual.secondary-hull::before {
+            content: '2';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Connecting Hull - Yellow tinted with special marker */
+        .component-visual.connecting-hull {
+            border-radius: 5px;
+            background: linear-gradient(to bottom, #f9e79f 0%, #f39c12 100%);
+            border: 2px solid #fef9e7;
+            position: relative;
+        }
+
+        .component-visual.connecting-hull::before {
+            content: 'C';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            font-size: 16px;
+        }
     </style>
 </head>
 
@@ -1180,39 +1809,39 @@
     </div>
 
     <!-- Ship Visualization Modal -->
-<div class="modal" id="visual-ship-modal">
-    <div class="modal-content" style="width: 90%; max-width: 900px; height: 80%;">
-        <div class="modal-header">
-            <h2>Ship Visualization</h2>
-            <button class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="visual-controls">
-                <button class="btn" id="auto-arrange-btn">Auto Arrange</button>
-                <button class="btn" id="save-design-btn">Save Design</button>
+    <div class="modal" id="visual-ship-modal">
+        <div class="modal-content" style="width: 90%; max-width: 900px; height: 80%;">
+            <div class="modal-header">
+                <h2>Ship Visualization</h2>
+                <button class="close-btn">&times;</button>
             </div>
-            <div class="visualization-container">
-                <div class="ship-canvas-container">
-                    <div id="ship-canvas"></div>
+            <div class="modal-body">
+                <div class="visual-controls">
+                    <button class="btn" id="auto-arrange-btn">Auto Arrange</button>
+                    <button class="btn" id="save-design-btn">Save Design</button>
                 </div>
-                <div class="components-panel">
-                    <h3>Ship Components</h3>
-                    <div class="component-categories">
-                        <div class="category-btn active" data-category="all">All</div>
-                        <div class="category-btn" data-category="hull">Hull</div>
-                        <div class="category-btn" data-category="power">Power</div>
-                        <div class="category-btn" data-category="engine">Engines</div>
-                        <div class="category-btn" data-category="command">Command</div>
-                        <div class="category-btn" data-category="tactical">Tactical</div>
+                <div class="visualization-container">
+                    <div class="ship-canvas-container">
+                        <div id="ship-canvas"></div>
                     </div>
-                    <div class="components-list" id="components-list">
-                        <!-- Components will be added here dynamically -->
+                    <div class="components-panel">
+                        <h3>Ship Components</h3>
+                        <div class="component-categories">
+                            <div class="category-btn active" data-category="all">All</div>
+                            <div class="category-btn" data-category="hull">Hull</div>
+                            <div class="category-btn" data-category="power">Power</div>
+                            <div class="category-btn" data-category="engine">Engines</div>
+                            <div class="category-btn" data-category="command">Command</div>
+                            <div class="category-btn" data-category="tactical">Tactical</div>
+                        </div>
+                        <div class="components-list" id="components-list">
+                            <!-- Components will be added here dynamically -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
 
@@ -1616,231 +2245,231 @@
         ];
 
         // Ship component definitions - maps room types to visual components
-const shipComponents = {
-    // Power systems
-    'warp-core': {
-        name: 'Warp Core',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/warp-core.png',
-        category: 'power',
-        width: 100,
-        height: 100,
-        universe: 'star-trek'
-    },
-    'hypermatter-reactor': {
-        name: 'Hypermatter Reactor',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hypermatter.png',
-        category: 'power',
-        width: 90,
-        height: 90,
-        universe: 'star-wars'
-    },
-    'fusion-reactor': {
-        name: 'Fusion Reactor',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fusion-reactor.png',
-        category: 'power',
-        width: 80,
-        height: 80,
-        universe: 'babylon-5'
-    },
-    'holtzman-generator': {
-        name: 'Holtzman Generator',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/holtzman.png',
-        category: 'power',
-        width: 120,
-        height: 120,
-        universe: 'dune'
-    },
-    
-    // Engine systems
-    'impulse-engine': {
-        name: 'Impulse Engines',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/impulse.png',
-        category: 'engine',
-        width: 140,
-        height: 70,
-        universe: 'star-trek'
-    },
-    'ion-engine': {
-        name: 'Ion Engines',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/ion-engine.png',
-        category: 'engine',
-        width: 130,
-        height: 60,
-        universe: 'star-wars'
-    },
-    'gravimetric-engine': {
-        name: 'Gravimetric Engine',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/gravimetric.png',
-        category: 'engine',
-        width: 110,
-        height: 80,
-        universe: 'babylon-5'
-    },
-    'suspensor-drive': {
-        name: 'Suspensor Drive',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/suspensor.png',
-        category: 'engine',
-        width: 130,
-        height: 70,
-        universe: 'dune'
-    },
-    
-    // Command systems
-    'federation-bridge': {
-        name: 'Federation Bridge',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fed-bridge.png',
-        category: 'command',
-        width: 150,
-        height: 80,
-        universe: 'star-trek'
-    },
-    'imperial-bridge': {
-        name: 'Imperial Bridge',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/imp-bridge.png',
-        category: 'command',
-        width: 160,
-        height: 70,
-        universe: 'star-wars'
-    },
-    'earthforce-cic': {
-        name: 'Earthforce CIC',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/cic.png',
-        category: 'command',
-        width: 140,
-        height: 90,
-        universe: 'babylon-5'
-    },
-    'navigation-chamber': {
-        name: 'Navigation Chamber',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/navigation.png',
-        category: 'command',
-        width: 130,
-        height: 100,
-        universe: 'dune'
-    },
-    
-    // Hull sections - available to all
-    'hull-section-1': {
-        name: 'Primary Hull',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull1.png',
-        category: 'hull',
-        width: 200,
-        height: 100,
-        universe: 'all'
-    },
-    'hull-section-2': {
-        name: 'Secondary Hull',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull2.png',
-        category: 'hull',
-        width: 180,
-        height: 90,
-        universe: 'all'
-    },
-    'hull-section-3': {
-        name: 'Connecting Hull',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull3.png',
-        category: 'hull',
-        width: 160,
-        height: 80,
-        universe: 'all'
-    },
-    
-    // Tactical systems
-    'phaser-bank': {
-        name: 'Phaser Banks',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/phaser.png',
-        category: 'tactical',
-        width: 80,
-        height: 40,
-        universe: 'star-trek'
-    },
-    'turbolaser-battery': {
-        name: 'Turbolaser Batteries',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/turbolaser.png',
-        category: 'tactical',
-        width: 90,
-        height: 50,
-        universe: 'star-wars'
-    },
-    'interceptor-grid': {
-        name: 'Interceptor Grid',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/interceptor.png',
-        category: 'tactical',
-        width: 70,
-        height: 40,
-        universe: 'babylon-5'
-    },
-    'lasgun-array': {
-        name: 'Lasgun Array',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/lasgun.png',
-        category: 'tactical',
-        width: 85,
-        height: 45,
-        universe: 'dune'
-    },
-    
-    // Defensive systems mapped to shield generators
-    'shield-generator': {
-        name: 'Shield Generator',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/shields.png',
-        category: 'tactical',
-        width: 100,
-        height: 60,
-        universe: 'star-trek'
-    },
-    'deflector-shield': {
-        name: 'Deflector Shield',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/deflector.png',
-        category: 'tactical',
-        width: 110,
-        height: 70,
-        universe: 'star-wars'
-    }
-};
+        const shipComponents = {
+            // Power systems
+            'warp-core': {
+                name: 'Warp Core',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/warp-core.png',
+                category: 'power',
+                width: 100,
+                height: 100,
+                universe: 'star-trek'
+            },
+            'hypermatter-reactor': {
+                name: 'Hypermatter Reactor',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hypermatter.png',
+                category: 'power',
+                width: 90,
+                height: 90,
+                universe: 'star-wars'
+            },
+            'fusion-reactor': {
+                name: 'Fusion Reactor',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fusion-reactor.png',
+                category: 'power',
+                width: 80,
+                height: 80,
+                universe: 'babylon-5'
+            },
+            'holtzman-generator': {
+                name: 'Holtzman Generator',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/holtzman.png',
+                category: 'power',
+                width: 120,
+                height: 120,
+                universe: 'dune'
+            },
 
-// Add fallback/generic components for any rooms that don't have specific images
-const genericComponents = {
-    'power': {
-        name: 'Generic Power Core',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-power.png',
-        category: 'power',
-        width: 90,
-        height: 90,
-        universe: 'all'
-    },
-    'engines': {
-        name: 'Generic Engines',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-engine.png',
-        category: 'engine',
-        width: 120,
-        height: 60,
-        universe: 'all'
-    },
-    'command': {
-        name: 'Generic Bridge',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-bridge.png',
-        category: 'command',
-        width: 140,
-        height: 80,
-        universe: 'all'
-    },
-    'tactical': {
-        name: 'Generic Weapons',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-weapon.png',
-        category: 'tactical',
-        width: 80,
-        height: 40,
-        universe: 'all'
-    },
-    'utility': {
-        name: 'Generic Module',
-        image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-module.png',
-        category: 'hull',
-        width: 70,
-        height: 70,
-        universe: 'all'
-    }
-};
+            // Engine systems
+            'impulse-engine': {
+                name: 'Impulse Engines',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/impulse.png',
+                category: 'engine',
+                width: 140,
+                height: 70,
+                universe: 'star-trek'
+            },
+            'ion-engine': {
+                name: 'Ion Engines',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/ion-engine.png',
+                category: 'engine',
+                width: 130,
+                height: 60,
+                universe: 'star-wars'
+            },
+            'gravimetric-engine': {
+                name: 'Gravimetric Engine',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/gravimetric.png',
+                category: 'engine',
+                width: 110,
+                height: 80,
+                universe: 'babylon-5'
+            },
+            'suspensor-drive': {
+                name: 'Suspensor Drive',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/suspensor.png',
+                category: 'engine',
+                width: 130,
+                height: 70,
+                universe: 'dune'
+            },
+
+            // Command systems
+            'federation-bridge': {
+                name: 'Federation Bridge',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/fed-bridge.png',
+                category: 'command',
+                width: 150,
+                height: 80,
+                universe: 'star-trek'
+            },
+            'imperial-bridge': {
+                name: 'Imperial Bridge',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/imp-bridge.png',
+                category: 'command',
+                width: 160,
+                height: 70,
+                universe: 'star-wars'
+            },
+            'earthforce-cic': {
+                name: 'Earthforce CIC',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/cic.png',
+                category: 'command',
+                width: 140,
+                height: 90,
+                universe: 'babylon-5'
+            },
+            'navigation-chamber': {
+                name: 'Navigation Chamber',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/navigation.png',
+                category: 'command',
+                width: 130,
+                height: 100,
+                universe: 'dune'
+            },
+
+            // Hull sections - available to all
+            'hull-section-1': {
+                name: 'Primary Hull',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull1.png',
+                category: 'hull',
+                width: 200,
+                height: 100,
+                universe: 'all'
+            },
+            'hull-section-2': {
+                name: 'Secondary Hull',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull2.png',
+                category: 'hull',
+                width: 180,
+                height: 90,
+                universe: 'all'
+            },
+            'hull-section-3': {
+                name: 'Connecting Hull',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/hull3.png',
+                category: 'hull',
+                width: 160,
+                height: 80,
+                universe: 'all'
+            },
+
+            // Tactical systems
+            'phaser-bank': {
+                name: 'Phaser Banks',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/phaser.png',
+                category: 'tactical',
+                width: 80,
+                height: 40,
+                universe: 'star-trek'
+            },
+            'turbolaser-battery': {
+                name: 'Turbolaser Batteries',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/turbolaser.png',
+                category: 'tactical',
+                width: 90,
+                height: 50,
+                universe: 'star-wars'
+            },
+            'interceptor-grid': {
+                name: 'Interceptor Grid',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/interceptor.png',
+                category: 'tactical',
+                width: 70,
+                height: 40,
+                universe: 'babylon-5'
+            },
+            'lasgun-array': {
+                name: 'Lasgun Array',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/lasgun.png',
+                category: 'tactical',
+                width: 85,
+                height: 45,
+                universe: 'dune'
+            },
+
+            // Defensive systems mapped to shield generators
+            'shield-generator': {
+                name: 'Shield Generator',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/shields.png',
+                category: 'tactical',
+                width: 100,
+                height: 60,
+                universe: 'star-trek'
+            },
+            'deflector-shield': {
+                name: 'Deflector Shield',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/deflector.png',
+                category: 'tactical',
+                width: 110,
+                height: 70,
+                universe: 'star-wars'
+            }
+        };
+
+        // Add fallback/generic components for any rooms that don't have specific images
+        const genericComponents = {
+            'power': {
+                name: 'Generic Power Core',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-power.png',
+                category: 'power',
+                width: 90,
+                height: 90,
+                universe: 'all'
+            },
+            'engines': {
+                name: 'Generic Engines',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-engine.png',
+                category: 'engine',
+                width: 120,
+                height: 60,
+                universe: 'all'
+            },
+            'command': {
+                name: 'Generic Bridge',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-bridge.png',
+                category: 'command',
+                width: 140,
+                height: 80,
+                universe: 'all'
+            },
+            'tactical': {
+                name: 'Generic Weapons',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-weapon.png',
+                category: 'tactical',
+                width: 80,
+                height: 40,
+                universe: 'all'
+            },
+            'utility': {
+                name: 'Generic Module',
+                image: 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/generic-module.png',
+                category: 'hull',
+                width: 70,
+                height: 70,
+                universe: 'all'
+            }
+        };
 
         // DOM elements
         const gridElement = document.getElementById('grid');
@@ -3500,41 +4129,41 @@ const genericComponents = {
         //         `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
         // }
 
-                // Run jobs for specified number of days
+        // Run jobs for specified number of days
         function runJobs() {
 
             showShipAnimation();
 
             const daysInput = document.getElementById('job-days');
             const days = parseInt(daysInput.value);
-        
+
             if (isNaN(days) || days < 1 || days > 30) {
                 showNotification('Invalid Input', 'Please enter a number between 1 and 30 days.');
                 return;
             }
-        
+
             // Check if ship has any functional rooms
             if (gameState.nodes.length === 0) {
                 showNotification('Error', 'You need to build some rooms first!');
                 return;
             }
-        
+
             // Check faction requirements first
             if (gameState.selectedFaction) {
                 checkFactionRequirements();
-        
+
                 if (!gameState.factionRequirementsMet) {
                     showNotification('Cannot Run Jobs', `Your ship does not meet the minimum requirements for a ${factions[gameState.selectedFaction].name}. Check the diagnostics for details.`);
                     return;
                 }
             }
-        
+
             // Calculate ship efficiency score
             let totalPower = 0;
             let usedPower = 0;
             let unsatisfiedRooms = 0;
             let totalRooms = gameState.nodes.length;
-        
+
             gameState.nodes.forEach(node => {
                 if (node.effectivePowerGeneration > 0) {
                     totalPower += node.effectivePowerGeneration;
@@ -3546,35 +4175,35 @@ const genericComponents = {
                     unsatisfiedRooms++;
                 }
             });
-        
+
             // Base income per day
             const baseIncome = 100;
-        
+
             // Efficiency multiplier (higher is better)
             let efficiencyMultiplier = 1.0;
-        
+
             // More rooms = more income
             efficiencyMultiplier += totalRooms * 0.1;
-        
+
             // Unsatisfied rooms reduce efficiency
             efficiencyMultiplier -= unsatisfiedRooms * 0.2;
-        
+
             // Surplus power increases efficiency
             const surplusPower = totalPower - usedPower;
             if (surplusPower > 0) {
                 efficiencyMultiplier += Math.min(1.0, surplusPower / 500);
             }
-        
+
             // Calculate total income before faction multiplier
             let totalIncome = Math.max(0, Math.floor(baseIncome * efficiencyMultiplier * days));
             let factionBonusMessage = "";
-        
+
             // Apply faction income multiplier if applicable
             if (gameState.selectedFaction) {
                 const factionMultiplier = factions[gameState.selectedFaction].incomeMultiplier;
                 const preMultiplierIncome = totalIncome;
                 totalIncome = Math.floor(totalIncome * factionMultiplier);
-        
+
                 // Calculate the difference for notification
                 const difference = totalIncome - preMultiplierIncome;
                 if (difference !== 0) {
@@ -3585,49 +4214,49 @@ const genericComponents = {
                     }
                 }
             }
-        
+
             gameState.lastJobIncome = totalIncome;
-        
+
             // Update room durability
             const roomsToDelete = [];
-        
+
             gameState.nodes.forEach(node => {
                 // Base durability reduction per day (3-7%)
                 const baseDurabilityLoss = 3 + Math.random() * 4;
-        
+
                 // Additional reduction based on requirements not being met
                 let durabilityLoss = baseDurabilityLoss;
-        
+
                 if (!node.powerSatisfied || !node.reqSatisfied) {
                     durabilityLoss *= 1.5; // 50% more wear if requirements not met
                 }
-        
+
                 // Cap at 10% per day as requested
                 durabilityLoss = Math.min(10, durabilityLoss);
-        
+
                 // Apply durability loss for all days
                 node.durability -= durabilityLoss * days;
-        
+
                 // Check if room needs to be scrapped
                 if (node.durability <= 0) {
                     roomsToDelete.push(node.id);
                 }
             });
-        
+
             // Remove rooms with 0 durability
             roomsToDelete.forEach(nodeId => {
                 deleteNode(nodeId);
             });
-        
+
             // Add income to credits
             gameState.credits += totalIncome;
-        
+
             // Update displays
             updateCreditsDisplay();
             calculateNodeEfficiency();
             updateNodeVisuals();
             updatePowerDisplay();
-        
+
             // Show summary with faction bonus/penalty included
             showNotification('Job Complete',
                 `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.${factionBonusMessage}\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
@@ -3918,699 +4547,722 @@ const genericComponents = {
             updateNodeInfoPanel();
         }
 
-        // Initialize the visualization
-function initShipVisualization() {
-    const visualModal = document.getElementById('visual-ship-modal');
-    const shipCanvas = document.getElementById('ship-canvas');
-    const componentsList = document.getElementById('components-list');
-    
-    // Clear previous contents
-    shipCanvas.innerHTML = '';
-    componentsList.innerHTML = '';
-    
-    // Store positioned components
-    gameState.shipDesign = gameState.shipDesign || [];
-    
-// Get unique room types in the ship
-const uniqueRoomTypes = new Set();
-const roomTypesCount = {};
 
-gameState.nodes.forEach(node => {
-    const room = roomTypes.find(r => r.id === node.type);
-    if (room) {
-        uniqueRoomTypes.add(room.id);
-        roomTypesCount[room.id] = (roomTypesCount[room.id] || 0) + 1;
-    }
-});
-    
-    // Add hull sections by default
-    const availableComponents = [...Object.entries(shipComponents)
-        .filter(([id, component]) => id.startsWith('hull-'))
-        .map(([id, component]) => ({id, ...component}))];
-    
-    // Add components for existing room types
-    gameState.nodes.forEach(node => {
-        if (shipComponents[node.type]) {
-            availableComponents.push({
-                id: node.type,
-                ...shipComponents[node.type],
-                count: roomTypesCount[node.type] || 1
-            });
-        } else {
-            // Find the room type
-            const room = roomTypes.find(r => r.id === node.type);
-            if (room && genericComponents[room.type]) {
-                availableComponents.push({
-                    id: node.type,
-                    ...genericComponents[room.type],
-                    count: roomTypesCount[node.type] || 1
-                });
-            }
-        }
-    });
-    
-    // Render available components
-    availableComponents.forEach(component => {
-        const componentEl = document.createElement('div');
-        componentEl.className = 'ship-component';
-        componentEl.dataset.componentId = component.id;
-        componentEl.dataset.category = component.category;
-        
-        componentEl.innerHTML = `
-            <img src="${component.image}" alt="${component.name}">
-            <div class="component-name">${component.name}</div>
-            ${component.count ? `<div class="component-count">x${component.count}</div>` : ''}
-        `;
-        
-        // Add drag start event
-        componentEl.addEventListener('mousedown', startDragComponent);
-        componentEl.addEventListener('touchstart', startDragComponentTouch, { passive: false });
-        
-        componentsList.appendChild(componentEl);
-    });
-    
-    // Restore saved design if any
-    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
-        gameState.shipDesign.forEach(item => {
-            placeComponent(item.id, item.x, item.y, item.rotation);
-        });
-    }
-    
-    // Apply category filter
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Update active state
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            // Filter components
-            const category = btn.dataset.category;
-            document.querySelectorAll('.ship-component').forEach(comp => {
-                if (category === 'all' || comp.dataset.category === category) {
-                    comp.style.display = '';
-                } else {
-                    comp.style.display = 'none';
+        // Initialize the visualization with CSS shapes
+        function initShipVisualization() {
+            const visualModal = document.getElementById('visual-ship-modal');
+            const shipCanvas = document.getElementById('ship-canvas');
+            const componentsList = document.getElementById('components-list');
+
+            // Add direction indicators to canvas
+            const frontIndicator = document.createElement('div');
+            frontIndicator.className = 'direction-indicator front';
+            frontIndicator.innerHTML = '← FRONT';
+            frontIndicator.style.position = 'absolute';
+            frontIndicator.style.left = '20px';
+            frontIndicator.style.top = '10px';
+            frontIndicator.style.color = 'rgba(255,255,255,0.7)';
+            frontIndicator.style.fontWeight = 'bold';
+            frontIndicator.style.pointerEvents = 'none';
+            shipCanvas.appendChild(frontIndicator);
+
+            const rearIndicator = document.createElement('div');
+            rearIndicator.className = 'direction-indicator rear';
+            rearIndicator.innerHTML = 'REAR →';
+            rearIndicator.style.position = 'absolute';
+            rearIndicator.style.right = '20px';
+            rearIndicator.style.top = '10px';
+            rearIndicator.style.color = 'rgba(255,255,255,0.7)';
+            rearIndicator.style.fontWeight = 'bold';
+            rearIndicator.style.pointerEvents = 'none';
+            shipCanvas.appendChild(rearIndicator);
+
+            // Clear previous contents
+            shipCanvas.innerHTML = '';
+            componentsList.innerHTML = '';
+
+            // Store positioned components
+            gameState.shipDesign = gameState.shipDesign || [];
+
+            // Define component styles by type
+            const componentStyles = {
+                'power': {
+                    name: 'Power Core',
+                    color: '#f1c40f',
+                    shape: 'power-core',
+                    category: 'power',
+                    width: 80,
+                    height: 80
+                },
+                'engines': {
+                    name: 'Engines',
+                    color: '#e67e22',
+                    shape: 'engines',
+                    category: 'engine',
+                    width: 120,
+                    height: 60
+                },
+                'command': {
+                    name: 'Command Bridge',
+                    color: '#3498db',
+                    shape: 'trapezoid',
+                    category: 'command',
+                    width: 100,
+                    height: 60
+                },
+                'tactical': {
+                    name: 'Weapons System',
+                    color: '#9b59b6',
+                    shape: 'diamond',
+                    category: 'tactical',
+                    width: 70,
+                    height: 70
+                },
+                'utility': {
+                    name: 'Utility Room',
+                    color: '#1abc9c',
+                    shape: 'hexagon',
+                    category: 'utility',
+                    width: 60,
+                    height: 60
+                },
+                'hull': {
+                    name: 'Hull Section',
+                    color: '#95a5a6',
+                    shape: 'rectangle',
+                    category: 'hull',
+                    width: 150,
+                    height: 80
+                }
+            };
+
+            // Add hull sections by default
+            // const availableComponents = [
+            //     { id: 'hull-1', type: 'hull', name: 'Primary Hull' },
+            //     { id: 'hull-2', type: 'hull', name: 'Secondary Hull' },
+            //     { id: 'hull-3', type: 'hull', name: 'Connecting Section' }
+            // ];
+
+            const hullComponents = [
+                { id: 'hull-1', type: 'hull', name: 'Primary Hull', cssClass: 'primary-hull' },
+                { id: 'hull-2', type: 'hull', name: 'Secondary Hull', cssClass: 'secondary-hull' },
+                { id: 'hull-3', type: 'hull', name: 'Connecting Section', cssClass: 'connecting-hull' }
+            ];
+
+            // Initialize availableComponents with hull components
+            const availableComponents = [...hullComponents];
+
+            // Add components for existing rooms
+            gameState.nodes.forEach(node => {
+                const room = roomTypes.find(r => r.id === node.type);
+                if (room && room.type) {
+                    availableComponents.push({
+                        id: node.id,
+                        type: room.type,
+                        name: node.name
+                    });
                 }
             });
-        });
-    });
-    
-    // Auto-arrange button
-    document.getElementById('auto-arrange-btn').addEventListener('click', autoArrangeShip);
-    
-    // Save design button
-    document.getElementById('save-design-btn').addEventListener('click', saveShipDesign);
-    
-    // Show the modal
-    visualModal.style.display = 'flex';
-}
 
-// Start dragging a component
-function startDragComponent(e) {
-    const component = e.currentTarget;
-    const componentId = component.dataset.componentId;
-    
-    // Create a drag image
-    const dragImage = document.createElement('div');
-    dragImage.className = 'placed-component dragging';
-    dragImage.dataset.componentId = componentId;
-    dragImage.innerHTML = component.innerHTML;
-    
-    // Get component data
-    const componentData = shipComponents[componentId] || 
-                         genericComponents[component.dataset.category];
-    
-    // Position at mouse/touch position
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    dragImage.style.width = `${componentData.width}px`;
-    dragImage.style.height = `${componentData.height}px`;
-    
-    dragImage.style.left = `${e.clientX - canvasRect.left - componentData.width / 2}px`;
-    dragImage.style.top = `${e.clientY - canvasRect.top - componentData.height / 2}px`;
-    
-    shipCanvas.appendChild(dragImage);
-    
-    // Add mousemove and mouseup events to document
-    document.addEventListener('mousemove', dragComponent);
-    document.addEventListener('mouseup', dropComponent);
-    
-    // Mark the source as being dragged
-    component.classList.add('dragging-source');
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
+            // Render available components
+            availableComponents.forEach(component => {
+                const compStyle = componentStyles[component.type];
+                if (!compStyle) return;
 
-// Mobile touch version for drag start
-function startDragComponentTouch(e) {
-    const touch = e.touches[0];
-    const component = e.currentTarget;
-    const componentId = component.dataset.componentId;
-    
-    // Create a drag image
-    const dragImage = document.createElement('div');
-    dragImage.className = 'placed-component dragging';
-    dragImage.dataset.componentId = componentId;
-    dragImage.innerHTML = component.innerHTML;
-    
-    // Get component data
-    const componentData = shipComponents[componentId] || 
-                         genericComponents[component.dataset.category];
-    
-    // Position at touch position
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    dragImage.style.width = `${componentData.width}px`;
-    dragImage.style.height = `${componentData.height}px`;
-    
-    dragImage.style.left = `${touch.clientX - canvasRect.left - componentData.width / 2}px`;
-    dragImage.style.top = `${touch.clientY - canvasRect.top - componentData.height / 2}px`;
-    
-    shipCanvas.appendChild(dragImage);
-    
-    // Add touch events to document
-    document.addEventListener('touchmove', dragComponentTouch, { passive: false });
-    document.addEventListener('touchend', dropComponentTouch);
-    
-    // Mark the source as being dragged
-    component.classList.add('dragging-source');
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
+                const componentEl = document.createElement('div');
+                componentEl.className = 'ship-component';
+                componentEl.dataset.componentId = component.id;
+                componentEl.dataset.componentType = component.type;
+                componentEl.dataset.category = compStyle.category;
 
-// Drag component with mouse
-function dragComponent(e) {
-    const dragImage = document.querySelector('.placed-component.dragging');
-    if (!dragImage) return;
-    
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    // Get component dimensions
-    const width = parseInt(dragImage.style.width);
-    const height = parseInt(dragImage.style.height);
-    
-    // Update position
-    dragImage.style.left = `${e.clientX - canvasRect.left - width / 2}px`;
-    dragImage.style.top = `${e.clientY - canvasRect.top - height / 2}px`;
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
+                componentEl.innerHTML = `
+            <div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>
+            <div class="component-name">${component.name}</div>
+        `;
 
-// Drag component with touch
-function dragComponentTouch(e) {
-    const touch = e.touches[0];
-    const dragImage = document.querySelector('.placed-component.dragging');
-    if (!dragImage) return;
-    
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    // Get component dimensions
-    const width = parseInt(dragImage.style.width);
-    const height = parseInt(dragImage.style.height);
-    
-    // Update position
-    dragImage.style.left = `${touch.clientX - canvasRect.left - width / 2}px`;
-    dragImage.style.top = `${touch.clientY - canvasRect.top - height / 2}px`;
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
+                // Add drag start event
+                componentEl.addEventListener('mousedown', (e) => {
+                    startDragComponent(e, component.id, component.type);
+                });
 
-// Drop component with mouse
-function dropComponent(e) {
-    const dragImage = document.querySelector('.placed-component.dragging');
-    if (!dragImage) return;
-    
-    const componentId = dragImage.dataset.componentId;
-    const x = parseInt(dragImage.style.left);
-    const y = parseInt(dragImage.style.top);
-    
-    // Remove the temporary drag image
-    dragImage.remove();
-    
-    // Remove dragging class from source
-    document.querySelectorAll('.dragging-source').forEach(el => {
-        el.classList.remove('dragging-source');
-    });
-    
-    // Place a permanent component
-    placeComponent(componentId, x, y, 0);
-    
-    // Remove the event listeners
-    document.removeEventListener('mousemove', dragComponent);
-    document.removeEventListener('mouseup', dropComponent);
-    
-    // Save the current design
-    updateShipDesign();
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
+                componentsList.appendChild(componentEl);
+            });
 
-// Drop component with touch
-function dropComponentTouch(e) {
-    const dragImage = document.querySelector('.placed-component.dragging');
-    if (!dragImage) return;
-    
-    const componentId = dragImage.dataset.componentId;
-    const x = parseInt(dragImage.style.left);
-    const y = parseInt(dragImage.style.top);
-    
-    // Remove the temporary drag image
-    dragImage.remove();
-    
-    // Remove dragging class from source
-    document.querySelectorAll('.dragging-source').forEach(el => {
-        el.classList.remove('dragging-source');
-    });
-    
-    // Place a permanent component
-    placeComponent(componentId, x, y, 0);
-    
-    // Remove the event listeners
-    document.removeEventListener('touchmove', dragComponentTouch);
-    document.removeEventListener('touchend', dropComponentTouch);
-    
-    // Save the current design
-    updateShipDesign();
-    
-    // Prevent default behavior
-    if (e.cancelable) e.preventDefault();
-}
-
-// Place a component at a specific position
-function placeComponent(componentId, x, y, rotation) {
-    const shipCanvas = document.getElementById('ship-canvas');
-    
-    // Get component data
-    const componentData = shipComponents[componentId] || 
-                         genericComponents[componentId.split('-')[0]];
-    
-    if (!componentData) return;
-    
-    // Create the component
-    const component = document.createElement('div');
-    component.className = 'placed-component';
-    component.dataset.componentId = componentId;
-    
-    component.innerHTML = `<img src="${componentData.image}" alt="${componentData.name}">`;
-    
-    // Position
-    component.style.left = `${x}px`;
-    component.style.top = `${y}px`;
-    component.style.width = `${componentData.width}px`;
-    component.style.height = `${componentData.height}px`;
-    
-    // Apply rotation if any
-    if (rotation) {
-        component.style.transform = `rotate(${rotation}deg)`;
-    }
-    
-    // Make it draggable
-    component.addEventListener('mousedown', startDragPlacedComponent);
-    component.addEventListener('touchstart', startDragPlacedComponentTouch, { passive: false });
-    
-    // Right click to rotate
-    component.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        
-        // Get current rotation
-        const style = window.getComputedStyle(component);
-        const matrix = new DOMMatrix(style.transform);
-        let angle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
-        
-        // Add 45 degrees
-        angle = (angle + 45) % 360;
-        
-        // Apply rotation
-        component.style.transform = `rotate(${angle}deg)`;
-        
-        // Update the design
-        updateShipDesign();
-    });
-    
-    // Add to canvas
-    shipCanvas.appendChild(component);
-}
-
-// Start dragging a placed component
-function startDragPlacedComponent(e) {
-    const component = e.currentTarget;
-    
-    // Set as dragging
-    component.classList.add('dragging');
-    
-    // Store initial position
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    const offsetX = e.clientX - canvasRect.left - parseInt(component.style.left);
-    const offsetY = e.clientY - canvasRect.top - parseInt(component.style.top);
-    
-    component.dataset.offsetX = offsetX;
-    component.dataset.offsetY = offsetY;
-    
-    // Add move and drop events
-    document.addEventListener('mousemove', dragPlacedComponent);
-    document.addEventListener('mouseup', dropPlacedComponent);
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
-
-// Start dragging a placed component (touch)
-function startDragPlacedComponentTouch(e) {
-    const touch = e.touches[0];
-    const component = e.currentTarget;
-    
-    // Set as dragging
-    component.classList.add('dragging');
-    
-    // Store initial position
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    const offsetX = touch.clientX - canvasRect.left - parseInt(component.style.left);
-    const offsetY = touch.clientY - canvasRect.top - parseInt(component.style.top);
-    
-    component.dataset.offsetX = offsetX;
-    component.dataset.offsetY = offsetY;
-    
-    // Add move and drop events
-    document.addEventListener('touchmove', dragPlacedComponentTouch, { passive: false });
-    document.addEventListener('touchend', dropPlacedComponentTouch);
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
-
-// Drag a placed component
-function dragPlacedComponent(e) {
-    const component = document.querySelector('.placed-component.dragging');
-    if (!component) return;
-    
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    const offsetX = parseInt(component.dataset.offsetX);
-    const offsetY = parseInt(component.dataset.offsetY);
-    
-    // Update position
-    component.style.left = `${e.clientX - canvasRect.left - offsetX}px`;
-    component.style.top = `${e.clientY - canvasRect.top - offsetY}px`;
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
-
-// Drag a placed component (touch)
-function dragPlacedComponentTouch(e) {
-    const touch = e.touches[0];
-    const component = document.querySelector('.placed-component.dragging');
-    if (!component) return;
-    
-    const shipCanvas = document.getElementById('ship-canvas');
-    const canvasRect = shipCanvas.getBoundingClientRect();
-    
-    const offsetX = parseInt(component.dataset.offsetX);
-    const offsetY = parseInt(component.dataset.offsetY);
-    
-    // Update position
-    component.style.left = `${touch.clientX - canvasRect.left - offsetX}px`;
-    component.style.top = `${touch.clientY - canvasRect.top - offsetY}px`;
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
-
-// Drop a placed component
-function dropPlacedComponent(e) {
-    const component = document.querySelector('.placed-component.dragging');
-    if (!component) return;
-    
-    // Remove dragging class
-    component.classList.remove('dragging');
-    
-    // Remove event listeners
-    document.removeEventListener('mousemove', dragPlacedComponent);
-    document.removeEventListener('mouseup', dropPlacedComponent);
-    
-    // Update the design
-    updateShipDesign();
-    
-    // Prevent default behavior
-    e.preventDefault();
-}
-
-// Drop a placed component (touch)
-function dropPlacedComponentTouch(e) {
-    const component = document.querySelector('.placed-component.dragging');
-    if (!component) return;
-    
-    // Remove dragging class
-    component.classList.remove('dragging');
-    
-    // Remove event listeners
-    document.removeEventListener('touchmove', dragPlacedComponentTouch);
-    document.removeEventListener('touchend', dropPlacedComponentTouch);
-    
-    // Update the design
-    updateShipDesign();
-    
-    // Prevent default behavior
-    if (e.cancelable) e.preventDefault();
-}
-
-// Update the ship design
-function updateShipDesign() {
-    const components = document.querySelectorAll('.placed-component:not(.dragging)');
-    gameState.shipDesign = [];
-    
-    components.forEach(component => {
-        // Get rotation
-        const style = window.getComputedStyle(component);
-        const matrix = new DOMMatrix(style.transform);
-        const angle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
-        
-        gameState.shipDesign.push({
-            id: component.dataset.componentId,
-            x: parseInt(component.style.left),
-            y: parseInt(component.style.top),
-            rotation: angle
-        });
-    });
-}
-
-// Auto-arrange the ship
-function autoArrangeShip() {
-    const shipCanvas = document.getElementById('ship-canvas');
-    
-    // Clear existing components
-    document.querySelectorAll('.placed-component').forEach(comp => comp.remove());
-    
-    // Get canvas dimensions
-    const width = shipCanvas.clientWidth;
-    const height = shipCanvas.clientHeight;
-    
-    // Group components by category
-    const hullComponents = Object.entries(shipComponents)
-        .filter(([id, comp]) => comp.category === 'hull')
-        .map(([id, comp]) => ({id, ...comp}));
-    
-    const powerComponents = [];
-    const engineComponents = [];
-    const commandComponents = [];
-    const tacticalComponents = [];
-    
-    // Get components from rooms
-    gameState.nodes.forEach(node => {
-        const roomType = roomTypes.find(r => r.id === node.type);
-        if (!roomType) return;
-        
-        let component;
-        if (shipComponents[node.type]) {
-            component = {id: node.type, ...shipComponents[node.type]};
-        } else if (genericComponents[roomType.type]) {
-            component = {id: node.type, ...genericComponents[roomType.type]};
-        } else {
-            return;
+            // Add styling for shapes
+            const style = document.createElement('style');
+            style.textContent = `
+        .component-visual {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 5px;
         }
-        
-        if (component.category === 'power') {
-            powerComponents.push(component);
-        } else if (component.category === 'engine') {
-            engineComponents.push(component);
-        } else if (component.category === 'command') {
-            commandComponents.push(component);
-        } else if (component.category === 'tactical') {
-            tacticalComponents.push(component);
+        .component-visual.circle {
+            border-radius: 50%;
         }
-    });
-    
-    // Place hull sections
-    if (hullComponents.length > 0) {
-        const mainHull = hullComponents[0];
-        placeComponent(mainHull.id, (width - mainHull.width) / 2, height / 2 - 50, 0);
-        
-        if (hullComponents.length > 1) {
-            const secondaryHull = hullComponents[1];
-            placeComponent(secondaryHull.id, (width - secondaryHull.width) / 2, height / 2 + 50, 0);
+        .component-visual.rectangle {
+            border-radius: 5px;
         }
-    }
-    
-    // Place command components
-    if (commandComponents.length > 0) {
-        const bridge = commandComponents[0];
-        placeComponent(bridge.id, (width - bridge.width) / 2, height / 3 - 50, 0);
-    }
-    
-    // Place power components
-    powerComponents.forEach((power, index) => {
-        const x = width / 2 - power.width / 2 + (index - powerComponents.length / 2) * 120;
-        placeComponent(power.id, x, height / 2, 0);
-    });
-    
-    // Place engine components
-    engineComponents.forEach((engine, index) => {
-        const x = width / 2 - engine.width / 2 + (index - engineComponents.length / 2) * 140;
-        placeComponent(engine.id, x, height * 2/3 + 50, 0);
-    });
-    
-    // Place tactical components
-    tacticalComponents.forEach((tactical, index) => {
-        const side = index % 2 === 0 ? -1 : 1;
-        const tier = Math.floor(index / 2);
-        const x = width / 2 + side * (150 + tactical.width / 2);
-        const y = height / 3 + tier * 70;
-        placeComponent(tactical.id, x, y, 0);
-    });
-    
-    // Save the design
-    updateShipDesign();
-}
+        .component-visual.trapezoid {
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+        .component-visual.diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        .component-visual.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+        .placed-component {
+            position: absolute;
+            cursor: move;
+        }
+        .placed-component .component-visual {
+            width: 100%;
+            height: 100%;
+        }
+    `;
+            document.head.appendChild(style);
 
-// Save the ship design
-function saveShipDesign() {
-    // Already saved in gameState.shipDesign
-    showNotification('Design Saved', 'Your ship design has been saved.');
-}
-
-// Show ship animation during jobs
-function showShipAnimation() {
-    // Create modal for animation
-    const animationModal = document.createElement('div');
-    animationModal.className = 'modal';
-    animationModal.id = 'animation-modal';
-    animationModal.style.display = 'flex';
-    
-    // Create content
-    const content = document.createElement('div');
-    content.className = 'modal-content';
-    content.style.width = '90%';
-    content.style.maxWidth = '800px';
-    content.style.height = '400px';
-    content.style.padding = '0';
-    content.style.overflow = 'hidden';
-    content.style.backgroundColor = 'black';
-    content.style.borderRadius = '10px';
-    content.style.position = 'relative';
-    
-    // Create starfield background
-    const starfield = document.createElement('div');
-    starfield.style.width = '100%';
-    starfield.style.height = '100%';
-    starfield.style.position = 'absolute';
-    starfield.style.backgroundImage = 'url("https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/starfield.jpg")';
-    starfield.style.backgroundSize = 'cover';
-    starfield.style.backgroundRepeat = 'repeat-x';
-    starfield.className = 'flying-animation';
-    
-    // Create ship container
-    const shipContainer = document.createElement('div');
-    shipContainer.style.position = 'absolute';
-    shipContainer.style.width = '100%';
-    shipContainer.style.height = '100%';
-    shipContainer.style.display = 'flex';
-    shipContainer.style.alignItems = 'center';
-    shipContainer.style.justifyContent = 'center';
-    
-    // Add ship image or components
-    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
-        // Create a copy of each component
-        gameState.shipDesign.forEach(item => {
-            const component = document.createElement('div');
-            component.className = 'placed-component';
-            component.style.position = 'absolute';
-            
-            // Get component data
-            const componentData = shipComponents[item.id] || 
-                               genericComponents[item.id.split('-')[0]];
-            
-            if (!componentData) return;
-            
-            component.innerHTML = `<img src="${componentData.image}" alt="${componentData.name}">`;
-            
-            // Position relative to center
-            const centerX = 400;
-            const centerY = 200;
-            component.style.left = `${centerX - 150 + item.x / 4}px`;
-            component.style.top = `${centerY - 75 + item.y / 4}px`;
-            component.style.width = `${componentData.width * 0.5}px`;
-            component.style.height = `${componentData.height * 0.5}px`;
-            
-            // Apply rotation
-            if (item.rotation) {
-                component.style.transform = `rotate(${item.rotation}deg)`;
+            // Restore saved design if any
+            if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+                gameState.shipDesign.forEach(item => {
+                    placeComponent(item.id, item.type, item.x, item.y);
+                });
             }
-            
-            shipContainer.appendChild(component);
-        });
-    } else {
-        // Use default ship image
-        const shipImage = document.createElement('img');
-        shipImage.src = 'https://cdn.jsdelivr.net/gh/ronmurphy/StarNode@main/img/default-ship.png';
-        shipImage.style.maxWidth = '300px';
-        shipImage.style.maxHeight = '150px';
-        shipContainer.appendChild(shipImage);
-    }
-    
-    // Add elements to DOM
-    content.appendChild(starfield);
-    content.appendChild(shipContainer);
-    animationModal.appendChild(content);
-    document.body.appendChild(animationModal);
-    
-    // Add close button with delay
-    setTimeout(() => {
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'btn';
-        closeBtn.style.position = 'absolute';
-        closeBtn.style.bottom = '10px';
-        closeBtn.style.right = '10px';
-        closeBtn.textContent = 'Continue';
-        
-        closeBtn.addEventListener('click', () => {
-            animationModal.remove();
-        });
-        
-        content.appendChild(closeBtn);
-    }, 3000);
-    
-    // Auto close after 10 seconds
-    setTimeout(() => {
-        if (document.body.contains(animationModal)) {
-            animationModal.remove();
-        }
-    }, 10000);
-}
 
+            // Apply category filter
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Update active state
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Filter components
+                    const category = btn.dataset.category;
+                    document.querySelectorAll('.ship-component').forEach(comp => {
+                        if (category === 'all' || comp.dataset.category === category) {
+                            comp.style.display = '';
+                        } else {
+                            comp.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Auto-arrange button
+            document.getElementById('auto-arrange-btn').addEventListener('click', autoArrangeShip);
+
+            // Show the modal
+            visualModal.style.display = 'flex';
+
+            // Function to start dragging component
+            function startDragComponent(e, id, type) {
+                const compStyle = componentStyles[type];
+                if (!compStyle) return;
+
+                // Create drag element
+                const dragEl = document.createElement('div');
+                dragEl.className = 'placed-component dragging';
+                dragEl.dataset.componentId = id;
+                dragEl.dataset.componentType = type;
+
+                // Set dimensions based on component type
+                dragEl.style.width = `${compStyle.width}px`;
+                dragEl.style.height = `${compStyle.height}px`;
+
+                // Find the component in availableComponents
+                const component = availableComponents.find(c => c.id === id);
+
+                // Create visual
+                // dragEl.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+                // Create visual with conditional class
+                if (component && component.cssClass) {
+                    dragEl.innerHTML = `<div class="component-visual ${component.cssClass}"></div>`;
+                } else {
+                    dragEl.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+                }
+
+                // Position at mouse
+                const canvasRect = shipCanvas.getBoundingClientRect();
+                dragEl.style.left = `${e.clientX - canvasRect.left - compStyle.width / 2}px`;
+                dragEl.style.top = `${e.clientY - canvasRect.top - compStyle.height / 2}px`;
+
+                shipCanvas.appendChild(dragEl);
+
+                // Setup drag events
+                document.addEventListener('mousemove', moveComponent);
+                document.addEventListener('mouseup', dropComponent);
+
+                e.preventDefault();
+
+                // In the startDragComponent function, add touch event support:
+
+                // Add touch events
+                document.addEventListener('touchmove', moveComponentTouch, { passive: false });
+                document.addEventListener('touchend', dropComponentTouch);
+
+                // Add these functions to your code:
+                function moveComponentTouch(e) {
+                    if (e.touches.length === 0) return;
+                    const touch = e.touches[0];
+                    const canvasRect = shipCanvas.getBoundingClientRect();
+                    dragEl.style.left = `${touch.clientX - canvasRect.left - compStyle.width / 2}px`;
+                    dragEl.style.top = `${touch.clientY - canvasRect.top - compStyle.height / 2}px`;
+                    e.preventDefault();
+                }
+
+                function dropComponentTouch() {
+                    document.removeEventListener('touchmove', moveComponentTouch);
+                    document.removeEventListener('touchend', dropComponentTouch);
+
+                    const dragEl = document.querySelector('.placed-component.dragging');
+                    if (dragEl) {
+                        dragEl.classList.remove('dragging');
+                        updateShipDesign();
+                    }
+                }
+
+
+                // Also add tap-to-rotate for mobile:
+                dragEl.addEventListener('touchstart', function (e) {
+                    if (e.touches.length !== 1) return;
+
+                    // Store the start time for detecting double tap
+                    const now = Date.now();
+                    const doubleTapDelay = 300; // ms
+
+                    if (dragEl.lastTap && (now - dragEl.lastTap) < doubleTapDelay) {
+                        // Double-tap detected, rotate the component
+                        const currentRotation = dragEl.dataset.rotation || 0;
+                        const newRotation = (parseInt(currentRotation) + 45) % 360;
+                        dragEl.style.transform = `rotate(${newRotation}deg)`;
+                        dragEl.dataset.rotation = newRotation;
+                        updateShipDesign();
+                        e.preventDefault();
+                    }
+                    dragEl.lastTap = now;
+                });
+
+                // Functions for dragging
+                function moveComponent(e) {
+                    const canvasRect = shipCanvas.getBoundingClientRect();
+                    dragEl.style.left = `${e.clientX - canvasRect.left - compStyle.width / 2}px`;
+                    dragEl.style.top = `${e.clientY - canvasRect.top - compStyle.height / 2}px`;
+                }
+
+                function dropComponent(e) {
+                    document.removeEventListener('mousemove', moveComponent);
+                    document.removeEventListener('mouseup', dropComponent);
+
+                    dragEl.classList.remove('dragging');
+
+                    // Save to design
+                    updateShipDesign();
+                }
+            }
+
+            // Place a component at specific coordinates
+            function placeComponent(id, type, x, y) {
+                const compStyle = componentStyles[type];
+                if (!compStyle) return;
+
+                const component = document.createElement('div');
+                component.className = 'placed-component';
+                component.dataset.componentId = id;
+                component.dataset.componentType = type;
+
+                // Set dimensions based on component type
+                component.style.width = `${compStyle.width}px`;
+                component.style.height = `${compStyle.height}px`;
+
+                // Position
+                component.style.left = `${x}px`;
+                component.style.top = `${y}px`;
+
+                const originalComp = availableComponents.find(c => c.id === id);
+
+                // Create visual
+                // component.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+                if (originalComp && originalComp.cssClass) {
+                    component.innerHTML = `<div class="component-visual ${originalComp.cssClass}"></div>`;
+                } else {
+                    component.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+                }
+
+                                // Add this after creating each component to visually indicate rotation capability
+                const rotateHint = document.createElement('div');
+                rotateHint.style.position = 'absolute';
+                rotateHint.style.top = '0';
+                rotateHint.style.left = '0';
+                rotateHint.style.padding = '2px';
+                rotateHint.style.fontSize = '10px';
+                rotateHint.style.backgroundColor = 'rgba(255,255,255,0.5)';
+                rotateHint.style.color = 'black';
+                rotateHint.textContent = '↻';
+                rotateHint.style.pointerEvents = 'none';
+                component.appendChild(rotateHint);
+
+                // Make draggable
+                component.addEventListener('mousedown', function (e) {
+                    if (e.button !== 0) return; // Only left mouse button
+
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startLeft = parseInt(component.style.left);
+                    const startTop = parseInt(component.style.top);
+
+                    component.classList.add('dragging');
+
+                    function moveHandler(e) {
+                        component.style.left = `${startLeft + e.clientX - startX}px`;
+                        component.style.top = `${startTop + e.clientY - startY}px`;
+                    }
+
+                    function upHandler() {
+                        document.removeEventListener('mousemove', moveHandler);
+                        document.removeEventListener('mouseup', upHandler);
+                        component.classList.remove('dragging');
+                        updateShipDesign();
+                    }
+
+                    document.addEventListener('mousemove', moveHandler);
+                    document.addEventListener('mouseup', upHandler);
+
+                    e.preventDefault();
+                });
+
+
+                // Add resize handle
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'resize-handle';
+                resizeHandle.style.position = 'absolute';
+                resizeHandle.style.right = '0';
+                resizeHandle.style.bottom = '0';
+                resizeHandle.style.width = '10px';
+                resizeHandle.style.height = '10px';
+                resizeHandle.style.backgroundColor = 'white';
+                resizeHandle.style.cursor = 'nwse-resize';
+                resizeHandle.style.borderRadius = '50%';
+                component.appendChild(resizeHandle);
+
+                // Add resize functionality
+                resizeHandle.addEventListener('mousedown', function (e) {
+                    e.stopPropagation(); // Prevent dragging
+
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startWidth = parseInt(component.style.width);
+                    const startHeight = parseInt(component.style.height);
+
+                    function mouseMoveHandler(e) {
+                        const newWidth = Math.max(30, startWidth + e.clientX - startX);
+                        const newHeight = Math.max(30, startHeight + e.clientY - startY);
+                        component.style.width = `${newWidth}px`;
+                        component.style.height = `${newHeight}px`;
+                        e.preventDefault();
+                    }
+
+                    function mouseUpHandler() {
+                        document.removeEventListener('mousemove', mouseMoveHandler);
+                        document.removeEventListener('mouseup', mouseUpHandler);
+                        updateShipDesign();
+                    }
+
+                    document.addEventListener('mousemove', mouseMoveHandler);
+                    document.addEventListener('mouseup', mouseUpHandler);
+                    e.preventDefault();
+                });
+
+                // Also add touch support for resize
+                resizeHandle.addEventListener('touchstart', function (e) {
+                    e.stopPropagation();
+
+                    const touch = e.touches[0];
+                    const startX = touch.clientX;
+                    const startY = touch.clientY;
+                    const startWidth = parseInt(component.style.width);
+                    const startHeight = parseInt(component.style.height);
+
+                    function touchMoveHandler(e) {
+                        const touch = e.touches[0];
+                        const newWidth = Math.max(30, startWidth + touch.clientX - startX);
+                        const newHeight = Math.max(30, startHeight + touch.clientY - startY);
+                        component.style.width = `${newWidth}px`;
+                        component.style.height = `${newHeight}px`;
+                        e.preventDefault();
+                    }
+
+                    function touchEndHandler() {
+                        document.removeEventListener('touchmove', touchMoveHandler);
+                        document.removeEventListener('touchend', touchEndHandler);
+                        updateShipDesign();
+                    }
+
+                    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+                    document.addEventListener('touchend', touchEndHandler);
+                    e.preventDefault();
+                });
+
+                // Double click to rotate
+//                 component.addEventListener('dblclick', function() {
+//     const currentRotation = this.dataset.rotation || 0;
+//     const newRotation = (parseInt(currentRotation) + 45) % 360;
+//     this.style.transform = `rotate(${newRotation}deg)`;
+//     this.dataset.rotation = newRotation;
+//     console.log(`Rotated to ${newRotation} degrees`); // Add logging
+//     updateShipDesign();
+// });
+
+component.addEventListener('dblclick', function() {
+    const currentRotation = this.dataset.rotation || 0;
+    const newRotation = (parseInt(currentRotation) + 45) % 360;
+    this.style.transform = `rotate(${newRotation}deg)`;
+    this.dataset.rotation = newRotation;
+    console.log(`Rotated to ${newRotation} degrees`); // Add logging
+    updateShipDesign();
+});
+
+                // Touch rotation for mobile devices
+component.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    
+    // Store the start time for detecting double tap
+    const now = Date.now();
+    const doubleTapDelay = 300; // ms
+    
+    if (this.lastTap && (now - this.lastTap) < doubleTapDelay) {
+        // Double-tap detected, rotate the component
+        const currentRotation = this.dataset.rotation || 0;
+        const newRotation = (parseInt(currentRotation) + 45) % 360;
+        this.style.transform = `rotate(${newRotation}deg)`;
+        this.dataset.rotation = newRotation;
+        updateShipDesign();
+        e.preventDefault();
+    }
+    this.lastTap = now;
+});
+
+                shipCanvas.appendChild(component);
+            }
+
+            // Update design data
+            function updateShipDesign() {
+                const components = document.querySelectorAll('.placed-component');
+                gameState.shipDesign = [];
+
+                components.forEach(comp => {
+                    gameState.shipDesign.push({
+                        id: comp.dataset.componentId,
+                        type: comp.dataset.componentType,
+                        x: parseInt(comp.style.left),
+                        y: parseInt(comp.style.top),
+                        rotation: parseInt(comp.dataset.rotation || 0)
+                    });
+                });
+            }
+
+            // Auto-arrange ship components
+            function autoArrangeShip() {
+                // Clear existing layout
+                shipCanvas.querySelectorAll('.placed-component').forEach(comp => comp.remove());
+
+                const canvasWidth = shipCanvas.clientWidth;
+                const canvasHeight = shipCanvas.clientHeight;
+                const centerX = canvasWidth / 2;
+                const centerY = canvasHeight / 2;
+
+                // Group components by type
+                const hullComponents = availableComponents.filter(c => c.type === 'hull');
+                const commandComponents = availableComponents.filter(c => c.type === 'command');
+                const engineComponents = availableComponents.filter(c => c.type === 'engines');
+                const powerComponents = availableComponents.filter(c => c.type === 'power');
+                const tacticalComponents = availableComponents.filter(c => c.type === 'tactical');
+
+                // Place hull in center
+                if (hullComponents.length > 0) {
+                    placeComponent(hullComponents[0].id, 'hull', centerX - 75, centerY - 40);
+
+                    if (hullComponents.length > 1) {
+                        placeComponent(hullComponents[1].id, 'hull', centerX - 75, centerY + 60);
+                    }
+                }
+
+                // Place command at top
+                if (commandComponents.length > 0) {
+                    placeComponent(commandComponents[0].id, 'command', centerX - 50, centerY - 120);
+                }
+
+                // Place engines at bottom
+                engineComponents.forEach((comp, i) => {
+                    const offset = (i - (engineComponents.length - 1) / 2) * 140;
+                    placeComponent(comp.id, 'engines', centerX - 60 + offset, centerY + 150);
+                });
+
+                // Place power on sides
+                powerComponents.forEach((comp, i) => {
+                    const side = i % 2 === 0 ? -1 : 1;
+                    const tier = Math.floor(i / 2);
+                    placeComponent(comp.id, 'power', centerX + side * 150, centerY - 50 + tier * 100);
+                });
+
+                // Place tactical systems
+                tacticalComponents.forEach((comp, i) => {
+                    const angle = (i / tacticalComponents.length) * Math.PI * 2;
+                    const x = centerX + Math.cos(angle) * 200 - 35;
+                    const y = centerY + Math.sin(angle) * 150 - 35;
+                    placeComponent(comp.id, 'tactical', x, y);
+                });
+
+                // Update design
+                updateShipDesign();
+            }
+        }
+
+        // Show ship animation during jobs
+        function showShipAnimation() {
+            // Create modal for animation
+            const animationModal = document.createElement('div');
+            animationModal.className = 'modal';
+            animationModal.id = 'animation-modal';
+            animationModal.style.display = 'flex';
+
+            // Create content
+            const content = document.createElement('div');
+            content.className = 'modal-content';
+            content.style.width = '90%';
+            content.style.maxWidth = '800px';
+            content.style.height = '400px';
+            content.style.padding = '0';
+            content.style.overflow = 'hidden';
+            content.style.backgroundColor = 'black';
+            content.style.borderRadius = '10px';
+            content.style.position = 'relative';
+
+            // Create starfield background with CSS
+            const starfield = document.createElement('div');
+            starfield.style.width = '100%';
+            starfield.style.height = '100%';
+            starfield.style.position = 'absolute';
+            starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+            starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+            starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+            starfield.style.animation = 'flying 20s linear infinite';
+
+            // Add animation style
+            const animStyle = document.createElement('style');
+            animStyle.textContent = `
+        @keyframes flying {
+            0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+            100% { background-position: 1000px 0, 1040px 60px, 1130px 270px, 1070px 100px; }
+        }
+    `;
+            document.head.appendChild(animStyle);
+
+            // Create ship container
+            const shipContainer = document.createElement('div');
+            shipContainer.style.position = 'absolute';
+            shipContainer.style.left = '50%';
+            shipContainer.style.top = '50%';
+            shipContainer.style.transform = 'translate(-50%, -50%)';
+            shipContainer.style.width = '300px';
+            shipContainer.style.height = '150px';
+
+            // Create ship based on design
+            if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+                // Define component styles by type
+                const componentStyles = {
+                    'power': { color: '#f1c40f', shape: 'power-core' },
+                    'engines': { color: '#e67e22', shape: 'engines' },
+                    'command': { color: '#3498db', shape: 'trapezoid' },
+                    'tactical': { color: '#9b59b6', shape: 'diamond' },
+                    'utility': { color: '#1abc9c', shape: 'hexagon' },
+                    'hull': { color: '#95a5a6', shape: 'rectangle' }
+                };
+
+                // Create each component but scaled down
+                gameState.shipDesign.forEach(comp => {
+                    const style = componentStyles[comp.type];
+                    if (!style) return;
+
+                    const element = document.createElement('div');
+                    element.style.position = 'absolute';
+                    element.style.left = `${comp.x * 0.4}px`;
+                    element.style.top = `${comp.y * 0.4}px`;
+                    element.style.width = '30px';
+                    element.style.height = '30px';
+
+                    if (comp.type === 'engines') {
+                        element.style.width = '40px';
+                        element.style.height = '20px';
+                    } else if (comp.type === 'hull') {
+                        element.style.width = '60px';
+                        element.style.height = '30px';
+                    }
+
+                    const visual = document.createElement('div');
+                    visual.className = `component-visual ${style.shape}`;
+                    visual.style.backgroundColor = style.color;
+                    visual.style.width = '100%';
+                    visual.style.height = '100%';
+
+                    // Apply rotation if any
+                    if (comp.rotation) {
+                        element.style.transform = `rotate(${comp.rotation}deg)`;
+                    }
+
+                    element.appendChild(visual);
+                    shipContainer.appendChild(element);
+                });
+            } else {
+                // Default ship shape if no design
+                const defaultShip = document.createElement('div');
+                defaultShip.style.width = '100%';
+                defaultShip.style.height = '100%';
+                defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+                defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+
+                shipContainer.appendChild(defaultShip);
+            }
+
+            // Add elements to DOM
+            content.appendChild(starfield);
+            content.appendChild(shipContainer);
+            animationModal.appendChild(content);
+            document.body.appendChild(animationModal);
+
+            // Add close button after delay
+            setTimeout(() => {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'btn';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.bottom = '10px';
+                closeBtn.style.right = '10px';
+                closeBtn.textContent = 'Continue';
+
+                closeBtn.addEventListener('click', () => {
+                    animationModal.remove();
+                });
+
+                content.appendChild(closeBtn);
+            }, 3000);
+
+            // Auto close after 10 seconds
+            setTimeout(() => {
+                if (document.body.contains(animationModal)) {
+                    animationModal.remove();
+                }
+            }, 10000);
+        }
+
+        // // Override runJobs to show animation
+        // const originalRunJobs = runJobs;
+        // runJobs = function() {
+        //     showShipAnimation();
+
+        //     // Call original after animation delay
+        //     setTimeout(() => {
+        //         originalRunJobs();
+        //     }, 3000);
+        // };
 
         // Set up all event listeners
         function setupEventListeners() {
@@ -4799,10 +5451,10 @@ function showShipAnimation() {
 
             document.getElementById('visualize-btn').addEventListener('click', initShipVisualization);
 
-// Close button for visualization modal
-document.querySelector('#visual-ship-modal .close-btn').addEventListener('click', () => {
-    document.getElementById('visual-ship-modal').style.display = 'none';
-});
+            // Close button for visualization modal
+            document.querySelector('#visual-ship-modal .close-btn').addEventListener('click', () => {
+                document.getElementById('visual-ship-modal').style.display = 'none';
+            });
 
             document.addEventListener('keydown', (e) => {
                 // Only process shortcuts if no input field is active
