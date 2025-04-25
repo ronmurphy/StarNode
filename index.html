@@ -1582,63 +1582,58 @@
             }
         }
 
-/* bradmod */
-
-#visual-ship-modal .modal-content {
-        display: flex;
-        flex-direction: column;
-        height: 90%; /* Adjust as needed */
-        max-height: 800px;
+/* Mobile optimized ship designer */
+@media (max-width: 768px) and (orientation: portrait) {
+    #visual-ship-modal .modal-content {
+        height: 95%;
+        width: 95%;
+        max-height: none;
+        overflow: hidden;
     }
     
     .visualization-container {
-        flex: 1;
-        display: flex;
-        height: calc(100% - 50px); /* Subtract header height */
-        min-height: 0; /* Important for flex containers */
-        overflow: hidden;
-    }
-    
-    .ship-canvas-container {
-        flex: 3;
-        min-height: 0; /* Important for flex containers */
-        overflow: hidden;
-        position: relative;
-    }
-    
-    #ship-canvas {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
+        flex-direction: column-reverse;
+        height: calc(100% - 60px);
     }
     
     .components-panel {
-        flex: 1;
-        min-height: 0; /* Important for flex containers */
-        overflow: auto;
+        height: 50%;  /* Increased from 40% */
+        flex: none;
+        max-height: 50vh;  /* Add a viewport height max */
+        overflow-y: auto; /* Ensure scrolling */
     }
     
-    @media (max-width: 768px) and (orientation: portrait) {
-        #visual-ship-modal .modal-content {
-            height: 95%;
-            width: 95%;
-            max-height: none;
-        }
-        
-        .visualization-container {
-            flex-direction: column-reverse;
-        }
-        
-        .components-panel {
-            height: 40%;
-            flex: none;
-        }
-        
-        .ship-canvas-container {
-            height: 60%;
-            flex: none;
-        }
+    .ship-canvas-container {
+        height: 50%;  /* Decreased from 60% */
+        flex: none;
     }
+    
+    .components-list {
+        max-height: 30vh; /* Control the scrollable area height */
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        padding: 5px;
+    }
+    
+    /* Make component items smaller to fit more */
+    .ship-component {
+        padding: 3px;
+    }
+    
+    .component-name {
+        font-size: 9px;
+    }
+    
+    /* Make modal taller */
+    .modal {
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+}
+
+
 
     </style>
 </head>
