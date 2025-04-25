@@ -4871,7 +4871,9 @@
 
             gameState.nodes.forEach(node => {
                 // Base durability reduction per day (3-7%)
-                const baseDurabilityLoss = 3 + Math.random() * 1;  // 4 = up to 10%
+                // const baseDurabilityLoss = 3 + Math.random() * 4; 
+
+                const baseDurabilityLoss = 1 + Math.random() * 1;  // 1-2 % per run
 
                 // Additional reduction based on requirements not being met
                 let durabilityLoss = baseDurabilityLoss;
