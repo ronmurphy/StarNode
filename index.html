@@ -3457,64 +3457,6 @@
             gameState.factionRequirementsMet = allRequirementsMet;
         }
 
-        // Render the room list based on filters
-        // function renderRoomList() {
-        //     roomListElement.innerHTML = '';
-
-
-
-        //     const filteredRooms = roomTypes.filter(room => {
-        //         const matchesUniverse = gameState.universeFilter === 'all' || room.universe === gameState.universeFilter;
-        //         const matchesType = gameState.roomTypeFilter === 'all' || room.type === gameState.roomTypeFilter;
-        //         const matchesSearch = room.name.toLowerCase().includes(gameState.searchTerm.toLowerCase()) ||
-        //             room.description.toLowerCase().includes(gameState.searchTerm.toLowerCase());
-        //         return matchesUniverse && matchesType && matchesSearch;
-        //     });
-
-        //     filteredRooms.forEach(room => {
-        //         const roomElement = document.createElement('div');
-        //         roomElement.className = 'room-item';
-        //         roomElement.dataset.roomId = room.id;
-
-        //         const powerInfo = room.powerGeneration > 0
-        //             ? `+${room.powerGeneration} Power`
-        //             : `-${room.powerRequirement} Power`;
-
-        //         roomElement.innerHTML = `
-        //             <div class="room-title">
-        //                 <span>${room.name}</span>
-        //                 <span>${room.cost} C</span>
-        //             </div>
-        //             <div class="room-details">
-        //                 <div>${powerInfo}</div>
-        //                 <div>${room.description}</div>
-        //             </div>
-        //         `;
-
-        //         //     roomElement.addEventListener('click', () => selectRoomType(room));
-        //         //     roomListElement.appendChild(roomElement);
-        //         // });
-
-        //         // Check if room is restricted by faction
-        //         let isRestricted = false;
-        //         if (gameState.selectedFaction) {
-        //             const faction = factions[gameState.selectedFaction];
-        //             isRestricted = faction.restrictedRooms.includes(room.id);
-
-        //             if (isRestricted) {
-        //                 roomElement.classList.add('restricted');
-        //                 roomElement.title = `This room is restricted by your faction: ${faction.name}`;
-        //             }
-        //         }
-
-        //         // Only add click event if not restricted
-        //         if (!isRestricted) {
-        //             roomElement.addEventListener('click', () => selectRoomType(room));
-        //         }
-
-        //         roomListElement.appendChild(roomElement);
-        //     });
-        // }
 
         function renderRoomList() {
     roomListElement.innerHTML = '';
@@ -4535,64 +4477,6 @@
             updateNodeInfoPanel();
         }
 
-        // Update the node info panel with selected node details
-        // function updateNodeInfoPanel() {
-        //     if (!gameState.selectedNode) {
-        //         noSelection.style.display = 'block';
-        //         selectionDetails.style.display = 'none';
-        //         return;
-        //     }
-
-        //     noSelection.style.display = 'none';
-        //     selectionDetails.style.display = 'block';
-
-        //     const node = gameState.selectedNode;
-        //     const roomType = roomTypes.find(r => r.id === node.type);
-
-        //     document.getElementById('detail-type').textContent = node.name;
-        //     document.getElementById('detail-room-type').textContent = roomType.type;
-        //     document.getElementById('detail-universe').textContent = roomType.universe.replace('-', ' ');
-        //     document.getElementById('detail-power-gen').textContent = node.powerGeneration > 0 ? `${node.effectivePowerGeneration}/${node.powerGeneration}` : '0';
-        //     document.getElementById('detail-power-req').textContent = node.powerRequirement > 0 ? `${node.powerRequirement}` : '0';
-        //     document.getElementById('detail-current-power').textContent = node.powerSatisfied ? 'Satisfied' : `Needs more power`;
-
-        //     // Show requirements
-        //     let requirementsText = node.requirements.length > 0 ?
-        //         node.requirements.join(', ') : 'None';
-        //     document.getElementById('detail-requirements').textContent = requirementsText;
-
-        //     // Show connections
-        //     let connectionsText = '';
-        //     if (node.outputs.length > 0) {
-        //         connectionsText += 'Outputs: ';
-        //         node.outputs.forEach((outputId, index) => {
-        //             const outputNode = gameState.nodes.find(n => n.id === outputId);
-        //             if (outputNode) {
-        //                 connectionsText += outputNode.name;
-        //                 if (index < node.outputs.length - 1) {
-        //                     connectionsText += ', ';
-        //                 }
-        //             }
-        //         });
-        //     }
-
-        //     if (node.inputs.length > 0) {
-        //         if (connectionsText) connectionsText += ' | ';
-        //         connectionsText += 'Inputs: ';
-        //         node.inputs.forEach((inputId, index) => {
-        //             const inputNode = gameState.nodes.find(n => n.id === inputId);
-        //             if (inputNode) {
-        //                 connectionsText += inputNode.name;
-        //                 if (index < node.inputs.length - 1) {
-        //                     connectionsText += ', ';
-        //                 }
-        //             }
-        //         });
-        //     }
-
-        //     if (!connectionsText) connectionsText = 'None';
-        //     document.getElementById('detail-connections').textContent = connectionsText;
-        // }
 
         function updateNodeInfoPanel() {
     if (!gameState.selectedNode) {
@@ -4668,47 +4552,6 @@
         selectionDetails.appendChild(actionsDiv);
     }
 }
-
-// Function to store a room
-// function storeRoom(nodeId) {
-//     const node = gameState.nodes.find(n => n.id === nodeId);
-//     if (!node) return;
-    
-//     // Remove connections involving this node
-//     const connectionsToRemove = gameState.connections.filter(
-//         conn => conn.fromId === nodeId || conn.toId === nodeId
-//     );
-    
-//     connectionsToRemove.forEach(conn => {
-//         removeConnection(conn.id);
-//     });
-    
-//     // Remove the node element from the DOM
-//     const nodeElement = document.getElementById(`node-${nodeId}`);
-//     if (nodeElement) {
-//         nodeElement.remove();
-//     }
-    
-//     // Move the node to storage
-//     gameState.storage.push(node);
-    
-//     // Remove the node from the game state
-//     gameState.nodes = gameState.nodes.filter(n => n.id !== nodeId);
-    
-//     // Clear selection since we just removed the selected node
-//     gameState.selectedNode = null;
-//     updateNodeInfoPanel();
-    
-//     // Update displays
-//     calculateNodeEfficiency();
-//     updateNodeVisuals();
-//     updatePowerDisplay();
-    
-//     // Update the room list to show storage
-//     renderRoomList();
-    
-//     showNotification('Room Stored', `${node.name} has been moved to storage.`);
-// }
 
 // Function to store a room
 function storeRoom(nodeId) {
@@ -5340,116 +5183,7 @@ function deployStoredRoom(nodeId) {
             processRegularJob(days);
         }
 
-        // Process regular job (normal income and durability loss)
-        // function processRegularJob(days) {
-        //     // Calculate ship efficiency score
-        //     let totalPower = 0;
-        //     let usedPower = 0;
-        //     let unsatisfiedRooms = 0;
-        //     let totalRooms = gameState.nodes.length;
 
-        //     gameState.nodes.forEach(node => {
-        //         if (node.effectivePowerGeneration > 0) {
-        //             totalPower += node.effectivePowerGeneration;
-        //         }
-        //         if (node.effectivePowerConsumption > 0 && node.powerSatisfied) {
-        //             usedPower += node.effectivePowerConsumption;
-        //         }
-        //         if (!node.powerSatisfied || !node.reqSatisfied) {
-        //             unsatisfiedRooms++;
-        //         }
-        //     });
-
-        //     // Base income per day
-        //     const baseIncome = 100;
-
-        //     // Efficiency multiplier (higher is better)
-        //     let efficiencyMultiplier = 1.0;
-
-        //     // More rooms = more income
-        //     efficiencyMultiplier += totalRooms * 0.1;
-
-        //     // Unsatisfied rooms reduce efficiency
-        //     efficiencyMultiplier -= unsatisfiedRooms * 0.2;
-
-        //     // Surplus power increases efficiency
-        //     const surplusPower = totalPower - usedPower;
-        //     if (surplusPower > 0) {
-        //         efficiencyMultiplier += Math.min(1.0, surplusPower / 500);
-        //     }
-
-        //     // Calculate total income before faction multiplier
-        //     let totalIncome = Math.max(0, Math.floor(baseIncome * efficiencyMultiplier * days));
-        //     let factionBonusMessage = "";
-
-        //     // Apply faction income multiplier if applicable
-        //     if (gameState.selectedFaction) {
-        //         const factionMultiplier = factions[gameState.selectedFaction].incomeMultiplier;
-        //         const preMultiplierIncome = totalIncome;
-        //         totalIncome = Math.floor(totalIncome * factionMultiplier);
-
-        //         // Calculate the difference for notification
-        //         const difference = totalIncome - preMultiplierIncome;
-        //         if (difference !== 0) {
-        //             if (difference > 0) {
-        //                 factionBonusMessage = `\nFaction Bonus: +${difference} credits`;
-        //             } else {
-        //                 factionBonusMessage = `\nFaction Penalty: -${Math.abs(difference)} credits`;
-        //             }
-        //         }
-        //     }
-
-        //     gameState.lastJobIncome = totalIncome;
-
-        //     // Show ship animation
-        //     showShipAnimation();
-
-        //     // Update room durability
-        //     const roomsToDelete = [];
-
-        //     gameState.nodes.forEach(node => {
-        //         // Base durability reduction per day (3-7%)
-        //         // const baseDurabilityLoss = 3 + Math.random() * 4; 
-
-        //         const baseDurabilityLoss = 1 + Math.random() * 1;  // 1-2 % per run
-
-        //         // Additional reduction based on requirements not being met
-        //         let durabilityLoss = baseDurabilityLoss;
-
-        //         if (!node.powerSatisfied || !node.reqSatisfied) {
-        //             durabilityLoss *= 1.5; // 50% more wear if requirements not met
-        //         }
-
-        //         // Cap at 10% per day as requested
-        //         durabilityLoss = Math.min(10, durabilityLoss);
-
-        //         // Apply durability loss for all days
-        //         node.durability -= durabilityLoss * days;
-
-        //         // Check if room needs to be scrapped
-        //         if (node.durability <= 0) {
-        //             roomsToDelete.push(node.id);
-        //         }
-        //     });
-
-        //     // Remove rooms with 0 durability
-        //     roomsToDelete.forEach(nodeId => {
-        //         deleteNode(nodeId);
-        //     });
-
-        //     // Add income to credits
-        //     gameState.credits += totalIncome;
-
-        //     // Update displays
-        //     updateCreditsDisplay();
-        //     calculateNodeEfficiency();
-        //     updateNodeVisuals();
-        //     updatePowerDisplay();
-
-        //     // Show summary with faction bonus/penalty included
-        //     showNotification('Job Complete',
-        //         `Completed ${days} days of jobs.\nEarned ${totalIncome} credits.${factionBonusMessage}\n${roomsToDelete.length} rooms were scrapped due to 0% durability.`);
-        // }
 
         function processRegularJob(days) {
     // Calculate ship efficiency score
@@ -5618,23 +5352,6 @@ function deployStoredRoom(nodeId) {
             }
         }
 
-        // Function to prepare ship data for export
-        // function prepareShipData() {
-        //     const shipName = document.getElementById('ship-name').value.trim() || 'Unnamed Ship';
-
-        //     // Prepare the ship data
-        //     const shipData = {
-        //         name: shipName,
-        //         credits: gameState.credits,
-        //         lastNodeId: gameState.lastNodeId,
-        //         lastConnectionId: gameState.lastConnectionId,
-        //         nodes: gameState.nodes,
-        //         connections: gameState.connections,
-        //         timestamp: Date.now()
-        //     };
-
-        //     return shipData;
-        // }
 
         function prepareShipData() {
     const shipName = document.getElementById('ship-name').value.trim() || 'Unnamed Ship';
@@ -5856,53 +5573,6 @@ function deployStoredRoom(nodeId) {
 
             scannerContainer.style.display = 'none';
         }
-
-        // Import ship from JSON string
-        // function importShipFromJSON(jsonString) {
-        //     try {
-        //         const shipData = JSON.parse(jsonString);
-
-        //         // Validate ship data
-        //         if (!shipData.name || !Array.isArray(shipData.nodes) || !Array.isArray(shipData.connections)) {
-        //             showNotification('Error', 'Invalid ship data format.');
-        //             return;
-        //         }
-
-        //         // Clear current ship
-        //         clearShip();
-
-        //         // Load ship data
-        //         document.getElementById('ship-name').value = shipData.name;
-        //         gameState.credits = shipData.credits;
-        //         gameState.lastNodeId = shipData.lastNodeId || 0;
-        //         gameState.lastConnectionId = shipData.lastConnectionId || 0;
-
-        //         // Create nodes
-        //         shipData.nodes.forEach(node => {
-        //             gameState.nodes.push(node);
-        //             renderNode(node);
-        //         });
-
-        //         // Create connections
-        //         shipData.connections.forEach(connection => {
-        //             gameState.connections.push(connection);
-        //             drawConnection(connection);
-        //         });
-
-        //         // Update displays
-        //         updateCreditsDisplay();
-        //         calculateNodeEfficiency();
-        //         updateNodeVisuals();
-        //         updatePowerDisplay();
-
-        //         // Close modal
-        //         document.getElementById('load-modal').style.display = 'none';
-
-        //         showNotification('Ship Imported', `${shipData.name} has been imported successfully.`);
-        //     } catch (error) {
-        //         showNotification('Error', 'Failed to import ship: ' + error.message);
-        //     }
-        // }
 
         // Modify importShipFromJSON to handle faction switching
 function importShipFromJSON(jsonString) {
@@ -6615,77 +6285,6 @@ function completeShipImport(shipData) {
             // }
 
 // Auto-arrange ship components
-function autoArrangeShip() {
-    // Clear existing layout
-    shipCanvas.querySelectorAll('.placed-component').forEach(comp => comp.remove());
-
-    const canvasWidth = shipCanvas.clientWidth;
-    const canvasHeight = shipCanvas.clientHeight;
-    const centerX = canvasWidth / 2;
-    const centerY = canvasHeight / 2;
-
-    // Group components by type
-    const hullComponents = availableComponents.filter(c => c.type === 'hull');
-    const commandComponents = availableComponents.filter(c => c.type === 'command');
-    const engineComponents = availableComponents.filter(c => c.type === 'engines');
-    const powerComponents = availableComponents.filter(c => c.type === 'power');
-    const tacticalComponents = availableComponents.filter(c => c.type === 'tactical');
-    const utilityComponents = availableComponents.filter(c => c.type === 'utility');
-
-    // Place hull in center
-    if (hullComponents.length > 0) {
-        placeComponent(hullComponents[0].id, 'hull', centerX - 75, centerY - 40);
-
-        if (hullComponents.length > 1) {
-            placeComponent(hullComponents[1].id, 'hull', centerX - 75, centerY + 60);
-        }
-        
-        if (hullComponents.length > 2) {
-            placeComponent(hullComponents[2].id, 'hull', centerX - 75, centerY - 140);
-        }
-    }
-
-    // Place command at top
-    if (commandComponents.length > 0) {
-        placeComponent(commandComponents[0].id, 'command', centerX - 50, centerY - 120);
-        
-        // Place additional command rooms in a row
-        for (let i = 1; i < commandComponents.length; i++) {
-            placeComponent(commandComponents[i].id, 'command', centerX - 50 + (i * 110), centerY - 120);
-        }
-    }
-
-    // Place engines at bottom
-    engineComponents.forEach((comp, i) => {
-        const offset = (i - (engineComponents.length - 1) / 2) * 140;
-        placeComponent(comp.id, 'engines', centerX - 60 + offset, centerY + 150);
-    });
-
-    // Place power on sides
-    powerComponents.forEach((comp, i) => {
-        const side = i % 2 === 0 ? -1 : 1;
-        const tier = Math.floor(i / 2);
-        placeComponent(comp.id, 'power', centerX + side * 150, centerY - 50 + tier * 100);
-    });
-
-    // Place tactical systems
-    tacticalComponents.forEach((comp, i) => {
-        const angle = (i / Math.max(1, tacticalComponents.length - 1)) * Math.PI;
-        const x = centerX + Math.cos(angle) * 200 - 35;
-        const y = centerY + Math.sin(angle) * 150 - 35;
-        placeComponent(comp.id, 'tactical', x, y);
-    });
-    
-    // Place utility rooms in a cluster on the right side
-    utilityComponents.forEach((comp, i) => {
-        const row = Math.floor(i / 3);
-        const col = i % 3;
-        placeComponent(comp.id, 'utility', centerX + 150 + (col * 70), centerY - 100 + (row * 70));
-    });
-
-    // Update design
-    updateShipDesign();
-}
 
         }
 
@@ -7254,61 +6853,80 @@ function autoArrangeShip() {
                 });
             }
 
-            // Auto-arrange ship components
-            function autoArrangeShip() {
-                // Clear existing layout
-                shipCanvas.querySelectorAll('.placed-component').forEach(comp => comp.remove());
 
-                const canvasWidth = shipCanvas.clientWidth;
-                const canvasHeight = shipCanvas.clientHeight;
-                const centerX = canvasWidth / 2;
-                const centerY = canvasHeight / 2;
+            // Auto-arrange ship components - newest claude code for all rooms
+function autoArrangeShip() {
+    // Clear existing layout
+    shipCanvas.querySelectorAll('.placed-component').forEach(comp => comp.remove());
 
-                // Group components by type
-                const hullComponents = availableComponents.filter(c => c.type === 'hull');
-                const commandComponents = availableComponents.filter(c => c.type === 'command');
-                const engineComponents = availableComponents.filter(c => c.type === 'engines');
-                const powerComponents = availableComponents.filter(c => c.type === 'power');
-                const tacticalComponents = availableComponents.filter(c => c.type === 'tactical');
+    const canvasWidth = shipCanvas.clientWidth;
+    const canvasHeight = shipCanvas.clientHeight;
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
 
-                // Place hull in center
-                if (hullComponents.length > 0) {
-                    placeComponent(hullComponents[0].id, 'hull', centerX - 75, centerY - 40);
+    // Group components by type
+    const hullComponents = availableComponents.filter(c => c.type === 'hull');
+    const commandComponents = availableComponents.filter(c => c.type === 'command');
+    const engineComponents = availableComponents.filter(c => c.type === 'engines');
+    const powerComponents = availableComponents.filter(c => c.type === 'power');
+    const tacticalComponents = availableComponents.filter(c => c.type === 'tactical');
+    const utilityComponents = availableComponents.filter(c => c.type === 'utility');
 
-                    if (hullComponents.length > 1) {
-                        placeComponent(hullComponents[1].id, 'hull', centerX - 75, centerY + 60);
-                    }
-                }
+    // Place hull in center
+    if (hullComponents.length > 0) {
+        placeComponent(hullComponents[0].id, 'hull', centerX - 75, centerY - 40);
 
-                // Place command at top
-                if (commandComponents.length > 0) {
-                    placeComponent(commandComponents[0].id, 'command', centerX - 50, centerY - 120);
-                }
+        if (hullComponents.length > 1) {
+            placeComponent(hullComponents[1].id, 'hull', centerX - 75, centerY + 60);
+        }
+        
+        if (hullComponents.length > 2) {
+            placeComponent(hullComponents[2].id, 'hull', centerX - 75, centerY - 140);
+        }
+    }
 
-                // Place engines at bottom
-                engineComponents.forEach((comp, i) => {
-                    const offset = (i - (engineComponents.length - 1) / 2) * 140;
-                    placeComponent(comp.id, 'engines', centerX - 60 + offset, centerY + 150);
-                });
+    // Place command at top
+    if (commandComponents.length > 0) {
+        placeComponent(commandComponents[0].id, 'command', centerX - 50, centerY - 120);
+        
+        // Place additional command rooms in a row
+        for (let i = 1; i < commandComponents.length; i++) {
+            placeComponent(commandComponents[i].id, 'command', centerX - 50 + (i * 110), centerY - 120);
+        }
+    }
 
-                // Place power on sides
-                powerComponents.forEach((comp, i) => {
-                    const side = i % 2 === 0 ? -1 : 1;
-                    const tier = Math.floor(i / 2);
-                    placeComponent(comp.id, 'power', centerX + side * 150, centerY - 50 + tier * 100);
-                });
+    // Place engines at bottom
+    engineComponents.forEach((comp, i) => {
+        const offset = (i - (engineComponents.length - 1) / 2) * 140;
+        placeComponent(comp.id, 'engines', centerX - 60 + offset, centerY + 150);
+    });
 
-                // Place tactical systems
-                tacticalComponents.forEach((comp, i) => {
-                    const angle = (i / tacticalComponents.length) * Math.PI * 2;
-                    const x = centerX + Math.cos(angle) * 200 - 35;
-                    const y = centerY + Math.sin(angle) * 150 - 35;
-                    placeComponent(comp.id, 'tactical', x, y);
-                });
+    // Place power on sides
+    powerComponents.forEach((comp, i) => {
+        const side = i % 2 === 0 ? -1 : 1;
+        const tier = Math.floor(i / 2);
+        placeComponent(comp.id, 'power', centerX + side * 150, centerY - 50 + tier * 100);
+    });
 
-                // Update design
-                updateShipDesign();
-            }
+    // Place tactical systems
+    tacticalComponents.forEach((comp, i) => {
+        const angle = (i / Math.max(1, tacticalComponents.length - 1)) * Math.PI;
+        const x = centerX + Math.cos(angle) * 200 - 35;
+        const y = centerY + Math.sin(angle) * 150 - 35;
+        placeComponent(comp.id, 'tactical', x, y);
+    });
+    
+    // Place utility rooms in a cluster on the right side
+    utilityComponents.forEach((comp, i) => {
+        const row = Math.floor(i / 3);
+        const col = i % 3;
+        placeComponent(comp.id, 'utility', centerX + 150 + (col * 70), centerY - 100 + (row * 70));
+    });
+
+    // Update design
+    updateShipDesign();
+}
+        
         }
 
         // Add window resize handler to adjust layout dynamically
