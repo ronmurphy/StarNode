@@ -4811,7 +4811,7 @@
 
             gameState.nodes.forEach(node => {
                 // Base durability reduction per day (3-7%)
-                const baseDurabilityLoss = 3 + Math.random() * 4;
+                const baseDurabilityLoss = 3 + Math.random() * 1;  // 4 = up to 10%
 
                 // Additional reduction based on requirements not being met
                 let durabilityLoss = baseDurabilityLoss;
@@ -5721,84 +5721,853 @@
         }
 
 
-        // Enhanced ship animation with encounter
-        function showShipAnimationWithEncounter(encounter) {
-            // Create modal for animation
-            const animationModal = document.createElement('div');
-            animationModal.className = 'modal';
-            animationModal.id = 'animation-modal';
-            animationModal.style.display = 'flex';
+// Add this to improve mobile responsiveness in the ship designer
+function initShipVisualization() {
+    const visualModal = document.getElementById('visual-ship-modal');
+    const shipCanvas = document.getElementById('ship-canvas');
+    const componentsList = document.getElementById('components-list');
 
-            // Create content
-            const content = document.createElement('div');
-            content.className = 'modal-content';
-            content.style.width = '90%';
-            content.style.maxWidth = '800px';
-            content.style.height = '500px';
-            content.style.padding = '0';
-            content.style.overflow = 'hidden';
-            content.style.backgroundColor = 'black';
-            content.style.borderRadius = '10px';
-            content.style.position = 'relative';
+    // Check if we're on mobile in portrait orientation
+    const isMobilePortrait = window.innerWidth < window.innerHeight && window.innerWidth < 768;
+    
+    // Adjust modal size based on device
+    if (isMobilePortrait) {
+        // Mobile portrait adjustments
+        visualModal.querySelector('.modal-content').style.height = '95%';
+        visualModal.querySelector('.modal-content').style.width = '95%';
+        
+        // Stack the visualization container vertically on mobile
+        const vizContainer = visualModal.querySelector('.visualization-container');
+        if (vizContainer) {
+            vizContainer.style.flexDirection = 'column-reverse';
+            vizContainer.style.height = 'calc(100% - 60px)';
+        }
+        
+        // Make components panel shorter but full width
+        const componentsPanel = visualModal.querySelector('.components-panel');
+        if (componentsPanel) {
+            componentsPanel.style.flex = '0 0 auto';
+            componentsPanel.style.height = '35%';
+            componentsPanel.style.width = '100%';
+        }
+        
+        // Make ship canvas taller
+        const shipCanvasContainer = visualModal.querySelector('.ship-canvas-container');
+        if (shipCanvasContainer) {
+            shipCanvasContainer.style.height = '65%';
+            shipCanvasContainer.style.width = '100%';
+        }
+        
+        // Adjust component grid to be 3 columns on mobile
+        const componentsList = visualModal.querySelector('.components-list');
+        if (componentsList) {
+            componentsList.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        }
+    } else {
+        // Desktop/landscape layout adjustments - remove any fixed heights
+        visualModal.querySelector('.modal-content').style.height = '80%';
+        visualModal.querySelector('.modal-content').style.maxWidth = '900px';
+    }
 
-            // Create starfield background with CSS
-            const starfield = document.createElement('div');
-            starfield.style.width = '100%';
-            starfield.style.height = '100%';
-            starfield.style.position = 'absolute';
-            starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
-            starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
-            starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
-            starfield.style.animation = 'flying 20s linear infinite';
+    // Add direction indicators to canvas
+    const frontIndicator = document.createElement('div');
+    frontIndicator.className = 'direction-indicator front';
+    frontIndicator.innerHTML = '← FRONT';
+    frontIndicator.style.position = 'absolute';
+    frontIndicator.style.left = '20px';
+    frontIndicator.style.top = '10px';
+    frontIndicator.style.color = 'rgba(255,255,255,0.7)';
+    frontIndicator.style.fontWeight = 'bold';
+    frontIndicator.style.pointerEvents = 'none';
+    shipCanvas.appendChild(frontIndicator);
 
-            // Create ship container
-            const shipContainer = document.createElement('div');
-            shipContainer.style.position = 'absolute';
-            shipContainer.style.left = '30%';
-            shipContainer.style.top = '50%';
-            shipContainer.style.transform = 'translate(-50%, -50%)';
-            shipContainer.style.width = '200px';
-            shipContainer.style.height = '100px';
-            shipContainer.style.zIndex = '10';
+    const rearIndicator = document.createElement('div');
+    rearIndicator.className = 'direction-indicator rear';
+    rearIndicator.innerHTML = 'REAR →';
+    rearIndicator.style.position = 'absolute';
+    rearIndicator.style.right = '20px';
+    rearIndicator.style.top = '10px';
+    rearIndicator.style.color = 'rgba(255,255,255,0.7)';
+    rearIndicator.style.fontWeight = 'bold';
+    rearIndicator.style.pointerEvents = 'none';
+    shipCanvas.appendChild(rearIndicator);
 
-            // Create encounter element
-            const encounterElement = document.createElement('div');
-            encounterElement.style.position = 'absolute';
-            encounterElement.style.right = '25%';
-            encounterElement.style.top = '50%';
-            encounterElement.style.transform = 'translate(50%, -50%)';
-            encounterElement.style.width = '250px';
-            encounterElement.style.height = '150px';
-            encounterElement.style.zIndex = '5';
+    // Clear previous contents
+    shipCanvas.innerHTML = '';
+    componentsList.innerHTML = '';
 
-            // If encounter has an image, use it
-            if (encounter.image) {
-                encounterElement.style.backgroundImage = `url(${encounter.image})`;
-                encounterElement.style.backgroundSize = 'contain';
-                encounterElement.style.backgroundRepeat = 'no-repeat';
-                encounterElement.style.backgroundPosition = 'center';
-            } else {
-                // Fallback to a basic shape
-                encounterElement.style.backgroundColor = '#e74c3c';
-                encounterElement.style.borderRadius = '10px';
+    // Store positioned components
+    gameState.shipDesign = gameState.shipDesign || [];
+
+    // Define component styles by type
+    const componentStyles = {
+        'power': {
+            name: 'Power Core',
+            color: '#f1c40f',
+            shape: 'power-core',
+            category: 'power',
+            width: 80,
+            height: 80
+        },
+        'engines': {
+            name: 'Engines',
+            color: '#e67e22',
+            shape: 'engines',
+            category: 'engine',
+            width: 120,
+            height: 60
+        },
+        'command': {
+            name: 'Command Bridge',
+            color: '#3498db',
+            shape: 'trapezoid',
+            category: 'command',
+            width: 100,
+            height: 60
+        },
+        'tactical': {
+            name: 'Weapons System',
+            color: '#9b59b6',
+            shape: 'diamond',
+            category: 'tactical',
+            width: 70,
+            height: 70
+        },
+        'utility': {
+            name: 'Utility Room',
+            color: '#1abc9c',
+            shape: 'hexagon',
+            category: 'utility',
+            width: 60,
+            height: 60
+        },
+        'hull': {
+            name: 'Hull Section',
+            color: '#95a5a6',
+            shape: 'rectangle',
+            category: 'hull',
+            width: 150,
+            height: 80
+        }
+    };
+
+    // Add hull sections by default
+    const hullComponents = [
+        { id: 'hull-1', type: 'hull', name: 'Primary Hull', cssClass: 'primary-hull' },
+        { id: 'hull-2', type: 'hull', name: 'Secondary Hull', cssClass: 'secondary-hull' },
+        { id: 'hull-3', type: 'hull', name: 'Connecting Section', cssClass: 'connecting-hull' }
+    ];
+
+    // Initialize availableComponents with hull components
+    const availableComponents = [...hullComponents];
+
+    // Add components for existing rooms
+    gameState.nodes.forEach(node => {
+        const room = roomTypes.find(r => r.id === node.type);
+        if (room && room.type) {
+            availableComponents.push({
+                id: node.id,
+                type: room.type,
+                name: node.name
+            });
+        }
+    });
+
+    // Render available components
+    availableComponents.forEach(component => {
+        const compStyle = componentStyles[component.type];
+        if (!compStyle) return;
+
+        const componentEl = document.createElement('div');
+        componentEl.className = 'ship-component';
+        componentEl.dataset.componentId = component.id;
+        componentEl.dataset.componentType = component.type;
+        componentEl.dataset.category = compStyle.category;
+
+        componentEl.innerHTML = `
+            <div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>
+            <div class="component-name">${component.name}</div>
+        `;
+
+        // Add drag start event
+        componentEl.addEventListener('mousedown', (e) => {
+            startDragComponent(e, component.id, component.type);
+        });
+
+        componentsList.appendChild(componentEl);
+    });
+
+    // Add styling for shapes
+    const style = document.createElement('style');
+    style.textContent = `
+        .component-visual {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 5px;
+        }
+        .component-visual.circle {
+            border-radius: 50%;
+        }
+        .component-visual.rectangle {
+            border-radius: 5px;
+        }
+        .component-visual.trapezoid {
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+        .component-visual.diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        .component-visual.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+        .placed-component {
+            position: absolute;
+            cursor: move;
+        }
+        .placed-component .component-visual {
+            width: 100%;
+            height: 100%;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Restore saved design if any
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        gameState.shipDesign.forEach(item => {
+            placeComponent(item.id, item.type, item.x, item.y);
+        });
+    }
+
+    // Apply category filter
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filter components
+            const category = btn.dataset.category;
+            document.querySelectorAll('.ship-component').forEach(comp => {
+                if (category === 'all' || comp.dataset.category === category) {
+                    comp.style.display = '';
+                } else {
+                    comp.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Auto-arrange button
+    document.getElementById('auto-arrange-btn').addEventListener('click', autoArrangeShip);
+
+    // Show the modal
+    visualModal.style.display = 'flex';
+
+    // Function to start dragging component
+    function startDragComponent(e, id, type) {
+        const compStyle = componentStyles[type];
+        if (!compStyle) return;
+
+        // Create drag element
+        const dragEl = document.createElement('div');
+        dragEl.className = 'placed-component dragging';
+        dragEl.dataset.componentId = id;
+        dragEl.dataset.componentType = type;
+
+        // Set dimensions based on component type
+        dragEl.style.width = `${compStyle.width}px`;
+        dragEl.style.height = `${compStyle.height}px`;
+
+        // Find the component in availableComponents
+        const component = availableComponents.find(c => c.id === id);
+
+        // Create visual
+        if (component && component.cssClass) {
+            dragEl.innerHTML = `<div class="component-visual ${component.cssClass}"></div>`;
+        } else {
+            dragEl.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+        }
+
+        // Position at mouse
+        const canvasRect = shipCanvas.getBoundingClientRect();
+        dragEl.style.left = `${e.clientX - canvasRect.left - compStyle.width / 2}px`;
+        dragEl.style.top = `${e.clientY - canvasRect.top - compStyle.height / 2}px`;
+
+        shipCanvas.appendChild(dragEl);
+
+        // Setup drag events
+        document.addEventListener('mousemove', moveComponent);
+        document.addEventListener('mouseup', dropComponent);
+
+        e.preventDefault();
+
+        // Add touch events
+        document.addEventListener('touchmove', moveComponentTouch, { passive: false });
+        document.addEventListener('touchend', dropComponentTouch);
+
+        function moveComponentTouch(e) {
+            if (e.touches.length === 0) return;
+            const touch = e.touches[0];
+            const canvasRect = shipCanvas.getBoundingClientRect();
+            dragEl.style.left = `${touch.clientX - canvasRect.left - compStyle.width / 2}px`;
+            dragEl.style.top = `${touch.clientY - canvasRect.top - compStyle.height / 2}px`;
+            e.preventDefault();
+        }
+
+        function dropComponentTouch() {
+            document.removeEventListener('touchmove', moveComponentTouch);
+            document.removeEventListener('touchend', dropComponentTouch);
+
+            const dragEl = document.querySelector('.placed-component.dragging');
+            if (dragEl) {
+                dragEl.classList.remove('dragging');
+                updateShipDesign();
+            }
+        }
+
+        // Also add tap-to-rotate for mobile:
+        dragEl.addEventListener('touchstart', function (e) {
+            if (e.touches.length !== 1) return;
+
+            // Store the start time for detecting double tap
+            const now = Date.now();
+            const doubleTapDelay = 300; // ms
+
+            if (dragEl.lastTap && (now - dragEl.lastTap) < doubleTapDelay) {
+                // Double-tap detected, rotate the component
+                const currentRotation = dragEl.dataset.rotation || 0;
+                const newRotation = (parseInt(currentRotation) + 45) % 360;
+                dragEl.style.transform = `rotate(${newRotation}deg)`;
+                dragEl.dataset.rotation = newRotation;
+                updateShipDesign();
+                e.preventDefault();
+            }
+            dragEl.lastTap = now;
+        });
+
+        // Functions for dragging
+        function moveComponent(e) {
+            const canvasRect = shipCanvas.getBoundingClientRect();
+            dragEl.style.left = `${e.clientX - canvasRect.left - compStyle.width / 2}px`;
+            dragEl.style.top = `${e.clientY - canvasRect.top - compStyle.height / 2}px`;
+        }
+
+        function dropComponent(e) {
+            document.removeEventListener('mousemove', moveComponent);
+            document.removeEventListener('mouseup', dropComponent);
+
+            dragEl.classList.remove('dragging');
+
+            // Save to design
+            updateShipDesign();
+        }
+    }
+
+// Place a component at specific coordinates
+function placeComponent(id, type, x, y) {
+        const compStyle = componentStyles[type];
+        if (!compStyle) return;
+
+        const component = document.createElement('div');
+        component.className = 'placed-component';
+        component.dataset.componentId = id;
+        component.dataset.componentType = type;
+
+        // Set dimensions based on component type
+        component.style.width = `${compStyle.width}px`;
+        component.style.height = `${compStyle.height}px`;
+
+        // Position
+        component.style.left = `${x}px`;
+        component.style.top = `${y}px`;
+
+        const originalComp = availableComponents.find(c => c.id === id);
+
+        // Create visual
+        if (originalComp && originalComp.cssClass) {
+            component.innerHTML = `<div class="component-visual ${originalComp.cssClass}"></div>`;
+        } else {
+            component.innerHTML = `<div class="component-visual ${compStyle.shape}" style="background-color: ${compStyle.color};"></div>`;
+        }
+
+        // Add this after creating each component to visually indicate rotation capability
+        const rotateHint = document.createElement('div');
+        rotateHint.style.position = 'absolute';
+        rotateHint.style.top = '0';
+        rotateHint.style.left = '0';
+        rotateHint.style.padding = '2px';
+        rotateHint.style.fontSize = '10px';
+        rotateHint.style.backgroundColor = 'rgba(255,255,255,0.5)';
+        rotateHint.style.color = 'black';
+        rotateHint.textContent = '↻';
+        rotateHint.style.pointerEvents = 'none';
+        component.appendChild(rotateHint);
+
+        // Make draggable
+        component.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return; // Only left mouse button
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startLeft = parseInt(component.style.left);
+            const startTop = parseInt(component.style.top);
+
+            component.classList.add('dragging');
+
+            function moveHandler(e) {
+                component.style.left = `${startLeft + e.clientX - startX}px`;
+                component.style.top = `${startTop + e.clientY - startY}px`;
             }
 
-            // Create encounter info panel
-            const infoPanel = document.createElement('div');
-            infoPanel.className = 'encounter-info';
-            infoPanel.style.position = 'absolute';
-            infoPanel.style.bottom = '20px';
-            infoPanel.style.left = '50%';
-            infoPanel.style.transform = 'translateX(-50%)';
-            infoPanel.style.backgroundColor = 'rgba(0,0,0,0.7)';
-            infoPanel.style.border = '1px solid var(--primary-color)';
-            infoPanel.style.borderRadius = '10px';
-            infoPanel.style.padding = '15px';
-            infoPanel.style.width = '80%';
-            infoPanel.style.color = 'white';
-            infoPanel.style.textAlign = 'center';
+            function upHandler() {
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('mouseup', upHandler);
+                component.classList.remove('dragging');
+                updateShipDesign();
+            }
 
-            infoPanel.innerHTML = `
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', upHandler);
+
+            e.preventDefault();
+        });
+
+        // Add touch support for dragging
+        component.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            
+            const touch = e.touches[0];
+            const startX = touch.clientX;
+            const startY = touch.clientY;
+            const startLeft = parseInt(component.style.left);
+            const startTop = parseInt(component.style.top);
+            
+            component.classList.add('dragging');
+            
+            function touchMoveHandler(e) {
+                if (e.touches.length !== 1) return;
+                const touch = e.touches[0];
+                component.style.left = `${startLeft + touch.clientX - startX}px`;
+                component.style.top = `${startTop + touch.clientY - startY}px`;
+                e.preventDefault();
+            }
+            
+            function touchEndHandler() {
+                document.removeEventListener('touchmove', touchMoveHandler);
+                document.removeEventListener('touchend', touchEndHandler);
+                component.classList.remove('dragging');
+                updateShipDesign();
+            }
+            
+            document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+            document.addEventListener('touchend', touchEndHandler);
+            
+            e.preventDefault();
+        }, { passive: false });
+
+        // Add resize handle
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'resize-handle';
+        resizeHandle.style.position = 'absolute';
+        resizeHandle.style.right = '0';
+        resizeHandle.style.bottom = '0';
+        resizeHandle.style.width = '10px';
+        resizeHandle.style.height = '10px';
+        resizeHandle.style.backgroundColor = 'white';
+        resizeHandle.style.cursor = 'nwse-resize';
+        resizeHandle.style.borderRadius = '50%';
+        component.appendChild(resizeHandle);
+
+        // Add resize functionality
+        resizeHandle.addEventListener('mousedown', function (e) {
+            e.stopPropagation(); // Prevent dragging
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startWidth = parseInt(component.style.width);
+            const startHeight = parseInt(component.style.height);
+
+            function mouseMoveHandler(e) {
+                const newWidth = Math.max(30, startWidth + e.clientX - startX);
+                const newHeight = Math.max(30, startHeight + e.clientY - startY);
+                component.style.width = `${newWidth}px`;
+                component.style.height = `${newHeight}px`;
+                e.preventDefault();
+            }
+
+            function mouseUpHandler() {
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
+                updateShipDesign();
+            }
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+            e.preventDefault();
+        });
+
+        // Also add touch support for resize
+        resizeHandle.addEventListener('touchstart', function (e) {
+            e.stopPropagation();
+
+            const touch = e.touches[0];
+            const startX = touch.clientX;
+            const startY = touch.clientY;
+            const startWidth = parseInt(component.style.width);
+            const startHeight = parseInt(component.style.height);
+
+            function touchMoveHandler(e) {
+                const touch = e.touches[0];
+                const newWidth = Math.max(30, startWidth + touch.clientX - startX);
+                const newHeight = Math.max(30, startHeight + touch.clientY - startY);
+                component.style.width = `${newWidth}px`;
+                component.style.height = `${newHeight}px`;
+                e.preventDefault();
+            }
+
+            function touchEndHandler() {
+                document.removeEventListener('touchmove', touchMoveHandler);
+                document.removeEventListener('touchend', touchEndHandler);
+                updateShipDesign();
+            }
+
+            document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+            document.addEventListener('touchend', touchEndHandler);
+            e.preventDefault();
+        });
+
+        // Double click to rotate
+        component.addEventListener('dblclick', function() {
+            const currentRotation = this.dataset.rotation || 0;
+            const newRotation = (parseInt(currentRotation) + 45) % 360;
+            this.style.transform = `rotate(${newRotation}deg)`;
+            this.dataset.rotation = newRotation;
+            console.log(`Rotated to ${newRotation} degrees`); // Add logging
+            updateShipDesign();
+        });
+
+        // Touch rotation for mobile devices
+        component.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            
+            // Store the start time for detecting double tap
+            const now = Date.now();
+            const doubleTapDelay = 300; // ms
+            
+            if (this.lastTap && (now - this.lastTap) < doubleTapDelay) {
+                // Double-tap detected, rotate the component
+                const currentRotation = this.dataset.rotation || 0;
+                const newRotation = (parseInt(currentRotation) + 45) % 360;
+                this.style.transform = `rotate(${newRotation}deg)`;
+                this.dataset.rotation = newRotation;
+                updateShipDesign();
+                e.preventDefault();
+            }
+            this.lastTap = now;
+        });
+
+        shipCanvas.appendChild(component);
+    }
+
+    // Update design data
+    function updateShipDesign() {
+        const components = document.querySelectorAll('.placed-component');
+        gameState.shipDesign = [];
+
+        components.forEach(comp => {
+            gameState.shipDesign.push({
+                id: comp.dataset.componentId,
+                type: comp.dataset.componentType,
+                x: parseInt(comp.style.left),
+                y: parseInt(comp.style.top),
+                rotation: parseInt(comp.dataset.rotation || 0)
+            });
+        });
+    }
+
+    // Auto-arrange ship components
+    function autoArrangeShip() {
+        // Clear existing layout
+        shipCanvas.querySelectorAll('.placed-component').forEach(comp => comp.remove());
+
+        const canvasWidth = shipCanvas.clientWidth;
+        const canvasHeight = shipCanvas.clientHeight;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+
+        // Group components by type
+        const hullComponents = availableComponents.filter(c => c.type === 'hull');
+        const commandComponents = availableComponents.filter(c => c.type === 'command');
+        const engineComponents = availableComponents.filter(c => c.type === 'engines');
+        const powerComponents = availableComponents.filter(c => c.type === 'power');
+        const tacticalComponents = availableComponents.filter(c => c.type === 'tactical');
+
+        // Place hull in center
+        if (hullComponents.length > 0) {
+            placeComponent(hullComponents[0].id, 'hull', centerX - 75, centerY - 40);
+
+            if (hullComponents.length > 1) {
+                placeComponent(hullComponents[1].id, 'hull', centerX - 75, centerY + 60);
+            }
+        }
+
+        // Place command at top
+        if (commandComponents.length > 0) {
+            placeComponent(commandComponents[0].id, 'command', centerX - 50, centerY - 120);
+        }
+
+        // Place engines at bottom
+        engineComponents.forEach((comp, i) => {
+            const offset = (i - (engineComponents.length - 1) / 2) * 140;
+            placeComponent(comp.id, 'engines', centerX - 60 + offset, centerY + 150);
+        });
+
+        // Place power on sides
+        powerComponents.forEach((comp, i) => {
+            const side = i % 2 === 0 ? -1 : 1;
+            const tier = Math.floor(i / 2);
+            placeComponent(comp.id, 'power', centerX + side * 150, centerY - 50 + tier * 100);
+        });
+
+        // Place tactical systems
+        tacticalComponents.forEach((comp, i) => {
+            const angle = (i / tacticalComponents.length) * Math.PI * 2;
+            const x = centerX + Math.cos(angle) * 200 - 35;
+            const y = centerY + Math.sin(angle) * 150 - 35;
+            placeComponent(comp.id, 'tactical', x, y);
+        });
+
+        // Update design
+        updateShipDesign();
+    }
+}
+
+// Add window resize handler to adjust layout dynamically
+function addResizeHandler() {
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            // If the ship visualization is open, reinitialize it
+            const visualModal = document.getElementById('visual-ship-modal');
+            if (visualModal && visualModal.style.display === 'flex') {
+                initShipVisualization();
+            }
+        }, 250);
+    });
+}
+
+
+
+        // Enhanced ship animation with encounter
+    //     function showShipAnimationWithEncounter(encounter) {
+    //         // Create modal for animation
+    //         const animationModal = document.createElement('div');
+    //         animationModal.className = 'modal';
+    //         animationModal.id = 'animation-modal';
+    //         animationModal.style.display = 'flex';
+
+    //         // Create content
+    //         const content = document.createElement('div');
+    //         content.className = 'modal-content';
+    //         content.style.width = '90%';
+    //         content.style.maxWidth = '800px';
+    //         content.style.height = '500px';
+    //         content.style.padding = '0';
+    //         content.style.overflow = 'hidden';
+    //         content.style.backgroundColor = 'black';
+    //         content.style.borderRadius = '10px';
+    //         content.style.position = 'relative';
+
+    //         // Create starfield background with CSS
+    //         const starfield = document.createElement('div');
+    //         starfield.style.width = '100%';
+    //         starfield.style.height = '100%';
+    //         starfield.style.position = 'absolute';
+    //         starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+    //         starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+    //         starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+    //         starfield.style.animation = 'flying 20s linear infinite';
+
+    //         // Create ship container
+    //         const shipContainer = document.createElement('div');
+    //         shipContainer.style.position = 'absolute';
+    //         shipContainer.style.left = '30%';
+    //         shipContainer.style.top = '50%';
+    //         shipContainer.style.transform = 'translate(-50%, -50%)';
+    //         shipContainer.style.width = '200px';
+    //         shipContainer.style.height = '100px';
+    //         shipContainer.style.zIndex = '10';
+
+    //         // Create encounter element
+    //         const encounterElement = document.createElement('div');
+    //         encounterElement.style.position = 'absolute';
+    //         encounterElement.style.right = '25%';
+    //         encounterElement.style.top = '50%';
+    //         encounterElement.style.transform = 'translate(50%, -50%)';
+    //         encounterElement.style.width = '250px';
+    //         encounterElement.style.height = '150px';
+    //         encounterElement.style.zIndex = '5';
+
+    //         // If encounter has an image, use it
+    //         if (encounter.image) {
+    //             encounterElement.style.backgroundImage = `url(${encounter.image})`;
+    //             encounterElement.style.backgroundSize = 'contain';
+    //             encounterElement.style.backgroundRepeat = 'no-repeat';
+    //             encounterElement.style.backgroundPosition = 'center';
+    //         } else {
+    //             // Fallback to a basic shape
+    //             encounterElement.style.backgroundColor = '#e74c3c';
+    //             encounterElement.style.borderRadius = '10px';
+    //         }
+
+    //         // Create encounter info panel
+    //         const infoPanel = document.createElement('div');
+    //         infoPanel.className = 'encounter-info';
+    //         infoPanel.style.position = 'absolute';
+    //         infoPanel.style.bottom = '20px';
+    //         infoPanel.style.left = '50%';
+    //         infoPanel.style.transform = 'translateX(-50%)';
+    //         infoPanel.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    //         infoPanel.style.border = '1px solid var(--primary-color)';
+    //         infoPanel.style.borderRadius = '10px';
+    //         infoPanel.style.padding = '15px';
+    //         infoPanel.style.width = '80%';
+    //         infoPanel.style.color = 'white';
+    //         infoPanel.style.textAlign = 'center';
+
+    //         infoPanel.innerHTML = `
+    //     <h3>${encounter.title}</h3>
+    //     <p>${encounter.description}</p>
+    //     <div id="encounter-options" style="display:none;">
+    //         <h4>Options:</h4>
+    //         <div class="option-buttons">
+    //             ${encounter.options.map((option, index) => `
+    //                 <button class="btn encounter-option" data-index="${index}">${option.text}</button>
+    //             `).join('')}
+    //         </div>
+    //     </div>
+    // `;
+
+    //         // Add elements to DOM
+    //         content.appendChild(starfield);
+    //         content.appendChild(shipContainer);
+    //         content.appendChild(encounterElement);
+    //         content.appendChild(infoPanel);
+    //         animationModal.appendChild(content);
+    //         document.body.appendChild(animationModal);
+
+    //         // Create ship based on existing design or use default
+    //         if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+    //             renderShipInContainer(shipContainer, 0.3);
+    //         } else {
+    //             // Default ship shape if no design
+    //             const defaultShip = document.createElement('div');
+    //             defaultShip.style.width = '100%';
+    //             defaultShip.style.height = '100%';
+    //             defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+    //             defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+    //             shipContainer.appendChild(defaultShip);
+    //         }
+
+    //         // Show encounter options after a delay
+    //         setTimeout(() => {
+    //             document.getElementById('encounter-options').style.display = 'block';
+
+    //             // Add event listeners to options buttons
+    //             document.querySelectorAll('.encounter-option').forEach(button => {
+    //                 button.addEventListener('click', function () {
+    //                     handleEncounterOption(encounter, parseInt(this.dataset.index), animationModal);
+    //                 });
+    //             });
+    //         }, 2000);
+
+    //         // Auto close after long timeout (fallback)
+    //         setTimeout(() => {
+    //             if (document.body.contains(animationModal)) {
+    //                 animationModal.remove();
+    //             }
+    //         }, 15000);
+    //     }
+
+// Enhanced ship animation with encounter
+function showShipAnimationWithEncounter(encounter) {
+    // Create modal for animation
+    const animationModal = document.createElement('div');
+    animationModal.className = 'modal';
+    animationModal.id = 'animation-modal';
+    animationModal.style.display = 'flex';
+
+    // Create content
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.width = '90%';
+    content.style.maxWidth = '800px';
+    content.style.height = '500px';
+    content.style.padding = '0';
+    content.style.overflow = 'hidden';
+    content.style.backgroundColor = 'black';
+    content.style.borderRadius = '10px';
+    content.style.position = 'relative';
+
+    // Create starfield background with CSS
+    const starfield = document.createElement('div');
+    starfield.style.width = '100%';
+    starfield.style.height = '100%';
+    starfield.style.position = 'absolute';
+    starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+    starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+    starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+    starfield.style.animation = 'flying 20s linear infinite';
+
+    // Create ship container
+    const shipContainer = document.createElement('div');
+    shipContainer.style.position = 'absolute';
+    shipContainer.style.left = '30%';
+    shipContainer.style.top = '50%';
+    shipContainer.style.transform = 'translate(-50%, -50%)';
+    shipContainer.style.width = '200px';
+    shipContainer.style.height = '100px';
+    shipContainer.style.zIndex = '10';
+
+    // Create encounter element
+    const encounterElement = document.createElement('div');
+    encounterElement.style.position = 'absolute';
+    encounterElement.style.right = '25%';
+    encounterElement.style.top = '50%';
+    encounterElement.style.transform = 'translate(50%, -50%)';
+    encounterElement.style.width = '250px';
+    encounterElement.style.height = '150px';
+    encounterElement.style.zIndex = '5';
+    
+    // If encounter has an image, use it
+    if (encounter.image) {
+        encounterElement.style.backgroundImage = `url(${encounter.image})`;
+        encounterElement.style.backgroundSize = 'contain';
+        encounterElement.style.backgroundRepeat = 'no-repeat';
+        encounterElement.style.backgroundPosition = 'center';
+    } else {
+        // Fallback to a basic shape
+        encounterElement.style.backgroundColor = '#e74c3c';
+        encounterElement.style.borderRadius = '10px';
+    }
+
+    // Create encounter info panel
+    const infoPanel = document.createElement('div');
+    infoPanel.className = 'encounter-info';
+    infoPanel.style.position = 'absolute';
+    infoPanel.style.bottom = '20px';
+    infoPanel.style.left = '50%';
+    infoPanel.style.transform = 'translateX(-50%)';
+    infoPanel.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    infoPanel.style.border = '1px solid var(--primary-color)';
+    infoPanel.style.borderRadius = '10px';
+    infoPanel.style.padding = '15px';
+    infoPanel.style.width = '80%';
+    infoPanel.style.color = 'white';
+    infoPanel.style.textAlign = 'center';
+
+    infoPanel.innerHTML = `
         <h3>${encounter.title}</h3>
         <p>${encounter.description}</p>
         <div id="encounter-options" style="display:none;">
@@ -5811,348 +6580,623 @@
         </div>
     `;
 
-            // Add elements to DOM
-            content.appendChild(starfield);
-            content.appendChild(shipContainer);
-            content.appendChild(encounterElement);
-            content.appendChild(infoPanel);
-            animationModal.appendChild(content);
-            document.body.appendChild(animationModal);
+    // Add elements to DOM
+    content.appendChild(starfield);
+    content.appendChild(shipContainer);
+    content.appendChild(encounterElement);
+    content.appendChild(infoPanel);
+    animationModal.appendChild(content);
+    document.body.appendChild(animationModal);
 
-            // Create ship based on existing design or use default
-            if (gameState.shipDesign && gameState.shipDesign.length > 0) {
-                renderShipInContainer(shipContainer, 0.3);
-            } else {
-                // Default ship shape if no design
-                const defaultShip = document.createElement('div');
-                defaultShip.style.width = '100%';
-                defaultShip.style.height = '100%';
-                defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
-                defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
-                shipContainer.appendChild(defaultShip);
-            }
+    // Create ship based on existing design or use default
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        renderShipInContainer(shipContainer, 0.3);
+    } else {
+        // Default ship shape if no design
+        const defaultShip = document.createElement('div');
+        defaultShip.style.width = '100%';
+        defaultShip.style.height = '100%';
+        defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+        defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+        shipContainer.appendChild(defaultShip);
+    }
 
-            // Show encounter options after a delay
-            setTimeout(() => {
-                document.getElementById('encounter-options').style.display = 'block';
+    // Show encounter options after a delay
+    setTimeout(() => {
+        document.getElementById('encounter-options').style.display = 'block';
+        
+        // Add event listeners to options buttons
+        document.querySelectorAll('.encounter-option').forEach(button => {
+            button.addEventListener('click', function() {
+                handleEncounterOption(encounter, parseInt(this.dataset.index), animationModal);
+            });
+        });
+    }, 2000);
 
-                // Add event listeners to options buttons
-                document.querySelectorAll('.encounter-option').forEach(button => {
-                    button.addEventListener('click', function () {
-                        handleEncounterOption(encounter, parseInt(this.dataset.index), animationModal);
-                    });
-                });
-            }, 2000);
-
-            // Auto close after long timeout (fallback)
-            setTimeout(() => {
-                if (document.body.contains(animationModal)) {
-                    animationModal.remove();
-                }
-            }, 15000);
+    // Auto close after long timeout (fallback) - reduce from 60s to 30s
+    if (window.encounterTimeout) {
+        clearTimeout(window.encounterTimeout);
+    }
+    
+    window.encounterTimeout = setTimeout(() => {
+        if (document.body.contains(animationModal)) {
+            animationModal.remove();
+            continueJobProcessing();
         }
+    }, 15000); // Reduced to 30 seconds
+}
 
 
         // Helper function to render ship in a container
-        function renderShipInContainer(container, scale = 0.3) {
-            // Define component styles by type
-            const componentStyles = {
-                'power': { color: '#f1c40f', shape: 'power-core' },
-                'engines': { color: '#e67e22', shape: 'engines' },
-                'command': { color: '#3498db', shape: 'trapezoid' },
-                'tactical': { color: '#9b59b6', shape: 'diamond' },
-                'utility': { color: '#1abc9c', shape: 'hexagon' },
-                'hull': { color: '#95a5a6', shape: 'rectangle' }
-            };
+        // function renderShipInContainer(container, scale = 0.3) {
+        //     // Define component styles by type
+        //     const componentStyles = {
+        //         'power': { color: '#f1c40f', shape: 'power-core' },
+        //         'engines': { color: '#e67e22', shape: 'engines' },
+        //         'command': { color: '#3498db', shape: 'trapezoid' },
+        //         'tactical': { color: '#9b59b6', shape: 'diamond' },
+        //         'utility': { color: '#1abc9c', shape: 'hexagon' },
+        //         'hull': { color: '#95a5a6', shape: 'rectangle' }
+        //     };
 
-            // Create each component
-            gameState.shipDesign.forEach(comp => {
-                const style = componentStyles[comp.type];
-                if (!style) return;
+        //     // Create each component
+        //     gameState.shipDesign.forEach(comp => {
+        //         const style = componentStyles[comp.type];
+        //         if (!style) return;
 
-                const element = document.createElement('div');
-                element.style.position = 'absolute';
-                element.style.left = `${comp.x * scale}px`;
-                element.style.top = `${comp.y * scale}px`;
+        //         const element = document.createElement('div');
+        //         element.style.position = 'absolute';
+        //         element.style.left = `${comp.x * scale}px`;
+        //         element.style.top = `${comp.y * scale}px`;
 
-                // Scale width and height
-                const width = (comp.type === 'engines' ? 40 : comp.type === 'hull' ? 60 : 30);
-                const height = (comp.type === 'engines' ? 20 : comp.type === 'hull' ? 30 : 30);
+        //         // Scale width and height
+        //         const width = (comp.type === 'engines' ? 40 : comp.type === 'hull' ? 60 : 30);
+        //         const height = (comp.type === 'engines' ? 20 : comp.type === 'hull' ? 30 : 30);
 
-                element.style.width = `${width}px`;
-                element.style.height = `${height}px`;
+        //         element.style.width = `${width}px`;
+        //         element.style.height = `${height}px`;
 
-                // Apply rotation if any
-                if (comp.rotation) {
-                    element.style.transform = `rotate(${comp.rotation}deg)`;
-                }
+        //         // Apply rotation if any
+        //         if (comp.rotation) {
+        //             element.style.transform = `rotate(${comp.rotation}deg)`;
+        //         }
 
-                const visual = document.createElement('div');
-                visual.className = `component-visual ${style.shape}`;
-                visual.style.backgroundColor = style.color;
-                visual.style.width = '100%';
-                visual.style.height = '100%';
+        //         const visual = document.createElement('div');
+        //         visual.className = `component-visual ${style.shape}`;
+        //         visual.style.backgroundColor = style.color;
+        //         visual.style.width = '100%';
+        //         visual.style.height = '100%';
 
-                element.appendChild(visual);
-                container.appendChild(element);
-            });
+        //         element.appendChild(visual);
+        //         container.appendChild(element);
+        //     });
+        // }
+
+// Helper function to render ship in a container
+function renderShipInContainer(container, scale = 0.3) {
+    // Define component styles by type
+    const componentStyles = {
+        'power': { color: '#f1c40f', shape: 'power-core' },
+        'engines': { color: '#e67e22', shape: 'engines' },
+        'command': { color: '#3498db', shape: 'trapezoid' },
+        'tactical': { color: '#9b59b6', shape: 'diamond' },
+        'utility': { color: '#1abc9c', shape: 'hexagon' },
+        'hull': { color: '#95a5a6', shape: 'rectangle' }
+    };
+
+    // Create each component
+    gameState.shipDesign.forEach(comp => {
+        const style = componentStyles[comp.type];
+        if (!style) return;
+
+        const element = document.createElement('div');
+        element.style.position = 'absolute';
+        element.style.left = `${comp.x * scale}px`;
+        element.style.top = `${comp.y * scale}px`;
+        
+        // Scale width and height
+        const width = (comp.type === 'engines' ? 40 : comp.type === 'hull' ? 60 : 30);
+        const height = (comp.type === 'engines' ? 20 : comp.type === 'hull' ? 30 : 30);
+        
+        element.style.width = `${width}px`;
+        element.style.height = `${height}px`;
+
+        // Apply rotation if any
+        if (comp.rotation) {
+            element.style.transform = `rotate(${comp.rotation}deg)`;
         }
 
+        const visual = document.createElement('div');
+        
+        // Check if it's a special hull type
+        let specialClass = '';
+        if (comp.id === 'hull-1') {
+            specialClass = 'primary-hull';
+        } else if (comp.id === 'hull-2') {
+            specialClass = 'secondary-hull';
+        } else if (comp.id === 'hull-3') {
+            specialClass = 'connecting-hull';
+        }
+        
+        if (specialClass) {
+            visual.className = `component-visual ${specialClass}`;
+        } else {
+            visual.className = `component-visual ${style.shape}`;
+            visual.style.backgroundColor = style.color;
+        }
+        
+        visual.style.width = '100%';
+        visual.style.height = '100%';
+
+        element.appendChild(visual);
+        container.appendChild(element);
+    });
+}
+
+
+
         // Function to handle encounter option selection
-        function handleEncounterOption(encounter, optionIndex, modal) {
-            const option = encounter.options[optionIndex];
+    //     function handleEncounterOption(encounter, optionIndex, modal) {
+    //         const option = encounter.options[optionIndex];
 
-            // Check if ship meets requirements
-            const meetsReq = meetsRequirements(gameState, option.requires);
-            const result = meetsReq ? option.success : option.failure;
+    //         // Check if ship meets requirements
+    //         const meetsReq = meetsRequirements(gameState, option.requires);
+    //         const result = meetsReq ? option.success : option.failure;
 
-            // Hide the options panel to prevent multiple selections
-            const optionsPanel = document.getElementById('encounter-options');
-            if (optionsPanel) {
-                optionsPanel.style.display = 'none';
-            }
+    //         // Hide the options panel to prevent multiple selections
+    //         const optionsPanel = document.getElementById('encounter-options');
+    //         if (optionsPanel) {
+    //             optionsPanel.style.display = 'none';
+    //         }
 
-            // Create result panel
-            const resultPanel = document.createElement('div');
-            resultPanel.className = 'encounter-result';
-            resultPanel.style.position = 'absolute';
-            resultPanel.style.top = '0';
-            resultPanel.style.left = '0';
-            resultPanel.style.right = '0';
-            resultPanel.style.bottom = '0';
-            resultPanel.style.backgroundColor = 'rgba(0,0,0,0.8)';
-            resultPanel.style.color = 'white';
-            resultPanel.style.padding = '20px';
-            resultPanel.style.display = 'flex';
-            resultPanel.style.flexDirection = 'column';
-            resultPanel.style.justifyContent = 'center';
-            resultPanel.style.alignItems = 'center';
-            resultPanel.style.textAlign = 'center';
-            resultPanel.style.zIndex = '20';
+    //         // Create result panel
+    //         const resultPanel = document.createElement('div');
+    //         resultPanel.className = 'encounter-result';
+    //         resultPanel.style.position = 'absolute';
+    //         resultPanel.style.top = '0';
+    //         resultPanel.style.left = '0';
+    //         resultPanel.style.right = '0';
+    //         resultPanel.style.bottom = '0';
+    //         resultPanel.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    //         resultPanel.style.color = 'white';
+    //         resultPanel.style.padding = '20px';
+    //         resultPanel.style.display = 'flex';
+    //         resultPanel.style.flexDirection = 'column';
+    //         resultPanel.style.justifyContent = 'center';
+    //         resultPanel.style.alignItems = 'center';
+    //         resultPanel.style.textAlign = 'center';
+    //         resultPanel.style.zIndex = '20';
 
-            // Result content
-            resultPanel.innerHTML = `
+    //         // Result content
+    //         resultPanel.innerHTML = `
+    //     <h2>${meetsReq ? 'Success!' : 'Failure'}</h2>
+    //     <p>${result.text}</p>
+    //     <div id="result-details"></div>
+    //     <button class="btn" id="continue-btn" style="margin-top: 20px;">Continue</button>
+    // `;
+
+    //         modal.querySelector('.modal-content').appendChild(resultPanel);
+
+    //         // Add continue button event
+    //         document.getElementById('continue-btn').addEventListener('click', () => {
+    //             // Apply results to game state
+    //             if (result.credits) {
+    //                 gameState.credits += result.credits;
+    //                 updateCreditsDisplay();
+
+    //                 // Add credits info to result
+    //                 const detailsEl = document.getElementById('result-details');
+    //                 if (result.credits > 0) {
+    //                     detailsEl.innerHTML += `<p>Earned ${result.credits} credits</p>`;
+    //                 } else if (result.credits < 0) {
+    //                     detailsEl.innerHTML += `<p>Spent ${Math.abs(result.credits)} credits</p>`;
+    //                 }
+    //             }
+
+    //             // Apply durability loss
+    //             if (result.durabilityLoss) {
+    //                 applyDurabilityLoss(gameState, result.durabilityLoss);
+    //                 calculateNodeEfficiency();
+    //                 updateNodeVisuals();
+    //                 updatePowerDisplay();
+
+    //                 const detailsEl = document.getElementById('result-details');
+    //                 detailsEl.innerHTML += `<p>Ship sustained damage</p>`;
+    //             }
+
+    //             // Process salvage if applicable
+    //             if (result.salvage && meetsReq) {
+    //                 const salvageResult = processSalvage(result.salvage);
+    //                 if (salvageResult) {
+    //                     const salvageNode = createSalvagedRoom(salvageResult);
+
+    //                     if (salvageNode) {
+    //                         const detailsEl = document.getElementById('result-details');
+    //                         detailsEl.innerHTML += `<p>Salvaged: ${salvageNode.name} (${salvageResult.durability}% durability)</p>`;
+    //                     }
+    //                 }
+    //             }
+
+    //             // Apply repairs if applicable
+    //             if (result.repair && meetsReq) {
+    //                 const repairValue = result.repair;
+    //                 let roomsRepaired = 0;
+
+    //                 gameState.nodes.forEach(node => {
+    //                     if (node.durability < 100 - repairValue) {
+    //                         node.durability += repairValue;
+    //                         roomsRepaired++;
+    //                     } else if (node.durability < 100) {
+    //                         node.durability = 100;
+    //                         roomsRepaired++;
+    //                     }
+    //                 });
+
+    //                 updateNodeVisuals();
+
+    //                 if (roomsRepaired > 0) {
+    //                     const detailsEl = document.getElementById('result-details');
+    //                     detailsEl.innerHTML += `<p>${result.success_text || `Repaired ${roomsRepaired} rooms`}</p>`;
+    //                 }
+    //             }
+
+    //             // Completely remove the modal
+    //             if (document.body.contains(modal)) {
+    //                 modal.remove();
+    //             }
+
+    //             // Cancel any pending timeouts
+    //             if (window.encounterTimeout) {
+    //                 clearTimeout(window.encounterTimeout);
+    //             }
+
+    //             // Continue job processing
+    //             continueJobProcessing();
+    //         });
+    //     }
+
+// Function to handle encounter option selection
+function handleEncounterOption(encounter, optionIndex, modal) {
+    const option = encounter.options[optionIndex];
+    
+    // Check if ship meets requirements
+    const meetsReq = meetsRequirements(gameState, option.requires);
+    const result = meetsReq ? option.success : option.failure;
+    
+    // Hide the options panel to prevent multiple selections
+    const optionsPanel = document.getElementById('encounter-options');
+    if (optionsPanel) {
+        optionsPanel.style.display = 'none';
+    }
+    
+    // Create result panel
+    const resultPanel = document.createElement('div');
+    resultPanel.className = 'encounter-result';
+    resultPanel.style.position = 'absolute';
+    resultPanel.style.top = '0';
+    resultPanel.style.left = '0';
+    resultPanel.style.right = '0';
+    resultPanel.style.bottom = '0';
+    resultPanel.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    resultPanel.style.color = 'white';
+    resultPanel.style.padding = '20px';
+    resultPanel.style.display = 'flex';
+    resultPanel.style.flexDirection = 'column';
+    resultPanel.style.justifyContent = 'center';
+    resultPanel.style.alignItems = 'center';
+    resultPanel.style.textAlign = 'center';
+    resultPanel.style.zIndex = '20';
+    
+    // Result content
+    resultPanel.innerHTML = `
         <h2>${meetsReq ? 'Success!' : 'Failure'}</h2>
         <p>${result.text}</p>
         <div id="result-details"></div>
         <button class="btn" id="continue-btn" style="margin-top: 20px;">Continue</button>
     `;
-
-            modal.querySelector('.modal-content').appendChild(resultPanel);
-
-            // Add continue button event
-            document.getElementById('continue-btn').addEventListener('click', () => {
-                // Apply results to game state
-                if (result.credits) {
-                    gameState.credits += result.credits;
-                    updateCreditsDisplay();
-
-                    // Add credits info to result
-                    const detailsEl = document.getElementById('result-details');
-                    if (result.credits > 0) {
-                        detailsEl.innerHTML += `<p>Earned ${result.credits} credits</p>`;
-                    } else if (result.credits < 0) {
-                        detailsEl.innerHTML += `<p>Spent ${Math.abs(result.credits)} credits</p>`;
-                    }
-                }
-
-                // Apply durability loss
-                if (result.durabilityLoss) {
-                    applyDurabilityLoss(gameState, result.durabilityLoss);
-                    calculateNodeEfficiency();
-                    updateNodeVisuals();
-                    updatePowerDisplay();
-
-                    const detailsEl = document.getElementById('result-details');
-                    detailsEl.innerHTML += `<p>Ship sustained damage</p>`;
-                }
-
-                // Process salvage if applicable
-                if (result.salvage && meetsReq) {
-                    const salvageResult = processSalvage(result.salvage);
-                    if (salvageResult) {
-                        const salvageNode = createSalvagedRoom(salvageResult);
-
-                        if (salvageNode) {
-                            const detailsEl = document.getElementById('result-details');
-                            detailsEl.innerHTML += `<p>Salvaged: ${salvageNode.name} (${salvageResult.durability}% durability)</p>`;
-                        }
-                    }
-                }
-
-                // Apply repairs if applicable
-                if (result.repair && meetsReq) {
-                    const repairValue = result.repair;
-                    let roomsRepaired = 0;
-
-                    gameState.nodes.forEach(node => {
-                        if (node.durability < 100 - repairValue) {
-                            node.durability += repairValue;
-                            roomsRepaired++;
-                        } else if (node.durability < 100) {
-                            node.durability = 100;
-                            roomsRepaired++;
-                        }
-                    });
-
-                    updateNodeVisuals();
-
-                    if (roomsRepaired > 0) {
-                        const detailsEl = document.getElementById('result-details');
-                        detailsEl.innerHTML += `<p>${result.success_text || `Repaired ${roomsRepaired} rooms`}</p>`;
-                    }
-                }
-
-                // Completely remove the modal
-                if (document.body.contains(modal)) {
-                    modal.remove();
-                }
-
-                // Cancel any pending timeouts
-                if (window.encounterTimeout) {
-                    clearTimeout(window.encounterTimeout);
-                }
-
-                // Continue job processing
-                continueJobProcessing();
-            });
-        }
-        // Show ship animation during jobs
-        function showShipAnimation() {
-            // Create modal for animation
-            const animationModal = document.createElement('div');
-            animationModal.className = 'modal';
-            animationModal.id = 'animation-modal';
-            animationModal.style.display = 'flex';
-
-            // Create content
-            const content = document.createElement('div');
-            content.className = 'modal-content';
-            content.style.width = '90%';
-            content.style.maxWidth = '800px';
-            content.style.height = '400px';
-            content.style.padding = '0';
-            content.style.overflow = 'hidden';
-            content.style.backgroundColor = 'black';
-            content.style.borderRadius = '10px';
-            content.style.position = 'relative';
-
-            // Create starfield background with CSS
-            const starfield = document.createElement('div');
-            starfield.style.width = '100%';
-            starfield.style.height = '100%';
-            starfield.style.position = 'absolute';
-            starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
-            starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
-            starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
-            starfield.style.animation = 'flying 20s linear infinite';
-
-            // Add animation style
-            const animStyle = document.createElement('style');
-            animStyle.textContent = `
-        @keyframes flying {
-            0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
-            100% { background-position: 1000px 0, 1040px 60px, 1130px 270px, 1070px 100px; }
-        }
-    `;
-            document.head.appendChild(animStyle);
-
-            // Create ship container
-            const shipContainer = document.createElement('div');
-            shipContainer.style.position = 'absolute';
-            shipContainer.style.left = '50%';
-            shipContainer.style.top = '50%';
-            shipContainer.style.transform = 'translate(-50%, -50%)';
-            shipContainer.style.width = '300px';
-            shipContainer.style.height = '150px';
-
-            // Create ship based on design
-            if (gameState.shipDesign && gameState.shipDesign.length > 0) {
-                // Define component styles by type
-                const componentStyles = {
-                    'power': { color: '#f1c40f', shape: 'power-core' },
-                    'engines': { color: '#e67e22', shape: 'engines' },
-                    'command': { color: '#3498db', shape: 'trapezoid' },
-                    'tactical': { color: '#9b59b6', shape: 'diamond' },
-                    'utility': { color: '#1abc9c', shape: 'hexagon' },
-                    'hull': { color: '#95a5a6', shape: 'rectangle' }
-                };
-
-                // Create each component but scaled down
-                gameState.shipDesign.forEach(comp => {
-                    const style = componentStyles[comp.type];
-                    if (!style) return;
-
-                    const element = document.createElement('div');
-                    element.style.position = 'absolute';
-                    element.style.left = `${comp.x * 0.4}px`;
-                    element.style.top = `${comp.y * 0.4}px`;
-                    element.style.width = '30px';
-                    element.style.height = '30px';
-
-                    if (comp.type === 'engines') {
-                        element.style.width = '40px';
-                        element.style.height = '20px';
-                    } else if (comp.type === 'hull') {
-                        element.style.width = '60px';
-                        element.style.height = '30px';
-                    }
-
-                    const visual = document.createElement('div');
-                    visual.className = `component-visual ${style.shape}`;
-                    visual.style.backgroundColor = style.color;
-                    visual.style.width = '100%';
-                    visual.style.height = '100%';
-
-                    // Apply rotation if any
-                    if (comp.rotation) {
-                        element.style.transform = `rotate(${comp.rotation}deg)`;
-                    }
-
-                    element.appendChild(visual);
-                    shipContainer.appendChild(element);
-                });
-            } else {
-                // Default ship shape if no design
-                const defaultShip = document.createElement('div');
-                defaultShip.style.width = '100%';
-                defaultShip.style.height = '100%';
-                defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
-                defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
-
-                shipContainer.appendChild(defaultShip);
+    
+    modal.querySelector('.modal-content').appendChild(resultPanel);
+    
+    // Add continue button event
+    document.getElementById('continue-btn').addEventListener('click', () => {
+        // Apply results to game state
+        if (result.credits) {
+            gameState.credits += result.credits;
+            updateCreditsDisplay();
+            
+            // Add credits info to result
+            const detailsEl = document.getElementById('result-details');
+            if (result.credits > 0) {
+                detailsEl.innerHTML += `<p>Earned ${result.credits} credits</p>`;
+            } else if (result.credits < 0) {
+                detailsEl.innerHTML += `<p>Spent ${Math.abs(result.credits)} credits</p>`;
             }
-
-            // Add elements to DOM
-            content.appendChild(starfield);
-            content.appendChild(shipContainer);
-            animationModal.appendChild(content);
-            document.body.appendChild(animationModal);
-
-            // Add close button after delay
-            setTimeout(() => {
-                const closeBtn = document.createElement('button');
-                closeBtn.className = 'btn';
-                closeBtn.style.position = 'absolute';
-                closeBtn.style.bottom = '10px';
-                closeBtn.style.right = '10px';
-                closeBtn.textContent = 'Continue';
-
-                closeBtn.addEventListener('click', () => {
-                    animationModal.remove();
-                });
-
-                content.appendChild(closeBtn);
-            }, 3000);
-
-            // Auto close after 10 seconds
-            setTimeout(() => {
-                if (document.body.contains(animationModal)) {
-                    animationModal.remove();
-                }
-            }, 10000);
         }
+        
+        // Apply durability loss
+        if (result.durabilityLoss) {
+            applyDurabilityLoss(gameState, result.durabilityLoss);
+            calculateNodeEfficiency();
+            updateNodeVisuals();
+            updatePowerDisplay();
+            
+            const detailsEl = document.getElementById('result-details');
+            detailsEl.innerHTML += `<p>Ship sustained damage</p>`;
+        }
+        
+        // Process salvage if applicable
+        if (result.salvage && meetsReq) {
+            const salvageResult = processSalvage(result.salvage);
+            if (salvageResult) {
+                const salvageNode = createSalvagedRoom(salvageResult);
+                
+                if (salvageNode) {
+                    const detailsEl = document.getElementById('result-details');
+                    detailsEl.innerHTML += `<p>Salvaged: ${salvageNode.name} (${salvageResult.durability}% durability)</p>`;
+                }
+            }
+        }
+        
+        // Apply repairs if applicable
+        if (result.repair && meetsReq) {
+            const repairValue = result.repair;
+            let roomsRepaired = 0;
+            
+            gameState.nodes.forEach(node => {
+                if (node.durability < 100 - repairValue) {
+                    node.durability += repairValue;
+                    roomsRepaired++;
+                } else if (node.durability < 100) {
+                    node.durability = 100;
+                    roomsRepaired++;
+                }
+            });
+            
+            updateNodeVisuals();
+            
+            if (roomsRepaired > 0) {
+                const detailsEl = document.getElementById('result-details');
+                detailsEl.innerHTML += `<p>${result.success_text || `Repaired ${roomsRepaired} rooms`}</p>`;
+            }
+        }
+        
+        // Completely remove the modal
+        if (document.body.contains(modal)) {
+            modal.remove();
+        }
+        
+        // Cancel any pending timeouts
+        if (window.encounterTimeout) {
+            clearTimeout(window.encounterTimeout);
+        }
+        
+        // Continue job processing
+        continueJobProcessing();
+    });
+}
 
+
+
+
+        // Show ship animation during jobs
+    //     function showShipAnimation() {
+    //         // Create modal for animation
+    //         const animationModal = document.createElement('div');
+    //         animationModal.className = 'modal';
+    //         animationModal.id = 'animation-modal';
+    //         animationModal.style.display = 'flex';
+
+    //         // Create content
+    //         const content = document.createElement('div');
+    //         content.className = 'modal-content';
+    //         content.style.width = '90%';
+    //         content.style.maxWidth = '800px';
+    //         content.style.height = '400px';
+    //         content.style.padding = '0';
+    //         content.style.overflow = 'hidden';
+    //         content.style.backgroundColor = 'black';
+    //         content.style.borderRadius = '10px';
+    //         content.style.position = 'relative';
+
+    //         // Create starfield background with CSS
+    //         const starfield = document.createElement('div');
+    //         starfield.style.width = '100%';
+    //         starfield.style.height = '100%';
+    //         starfield.style.position = 'absolute';
+    //         starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+    //         starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+    //         starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+    //         starfield.style.animation = 'flying 20s linear infinite';
+
+    //         // Add animation style
+    //         const animStyle = document.createElement('style');
+    //         animStyle.textContent = `
+    //     @keyframes flying {
+    //         0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+    //         100% { background-position: 1000px 0, 1040px 60px, 1130px 270px, 1070px 100px; }
+    //     }
+    // `;
+    //         document.head.appendChild(animStyle);
+
+    //         // Create ship container
+    //         const shipContainer = document.createElement('div');
+    //         shipContainer.style.position = 'absolute';
+    //         shipContainer.style.left = '50%';
+    //         shipContainer.style.top = '50%';
+    //         shipContainer.style.transform = 'translate(-50%, -50%)';
+    //         shipContainer.style.width = '300px';
+    //         shipContainer.style.height = '150px';
+
+    //         // Create ship based on design
+    //         if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+    //             // Define component styles by type
+    //             const componentStyles = {
+    //                 'power': { color: '#f1c40f', shape: 'power-core' },
+    //                 'engines': { color: '#e67e22', shape: 'engines' },
+    //                 'command': { color: '#3498db', shape: 'trapezoid' },
+    //                 'tactical': { color: '#9b59b6', shape: 'diamond' },
+    //                 'utility': { color: '#1abc9c', shape: 'hexagon' },
+    //                 'hull': { color: '#95a5a6', shape: 'rectangle' }
+    //             };
+
+    //             // Create each component but scaled down
+    //             gameState.shipDesign.forEach(comp => {
+    //                 const style = componentStyles[comp.type];
+    //                 if (!style) return;
+
+    //                 const element = document.createElement('div');
+    //                 element.style.position = 'absolute';
+    //                 element.style.left = `${comp.x * 0.4}px`;
+    //                 element.style.top = `${comp.y * 0.4}px`;
+    //                 element.style.width = '30px';
+    //                 element.style.height = '30px';
+
+    //                 if (comp.type === 'engines') {
+    //                     element.style.width = '40px';
+    //                     element.style.height = '20px';
+    //                 } else if (comp.type === 'hull') {
+    //                     element.style.width = '60px';
+    //                     element.style.height = '30px';
+    //                 }
+
+    //                 const visual = document.createElement('div');
+    //                 visual.className = `component-visual ${style.shape}`;
+    //                 visual.style.backgroundColor = style.color;
+    //                 visual.style.width = '100%';
+    //                 visual.style.height = '100%';
+
+    //                 // Apply rotation if any
+    //                 if (comp.rotation) {
+    //                     element.style.transform = `rotate(${comp.rotation}deg)`;
+    //                 }
+
+    //                 element.appendChild(visual);
+    //                 shipContainer.appendChild(element);
+    //             });
+    //         } else {
+    //             // Default ship shape if no design
+    //             const defaultShip = document.createElement('div');
+    //             defaultShip.style.width = '100%';
+    //             defaultShip.style.height = '100%';
+    //             defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+    //             defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+
+    //             shipContainer.appendChild(defaultShip);
+    //         }
+
+    //         // Add elements to DOM
+    //         content.appendChild(starfield);
+    //         content.appendChild(shipContainer);
+    //         animationModal.appendChild(content);
+    //         document.body.appendChild(animationModal);
+
+    //         // Add close button after delay
+    //         setTimeout(() => {
+    //             const closeBtn = document.createElement('button');
+    //             closeBtn.className = 'btn';
+    //             closeBtn.style.position = 'absolute';
+    //             closeBtn.style.bottom = '10px';
+    //             closeBtn.style.right = '10px';
+    //             closeBtn.textContent = 'Continue';
+
+    //             closeBtn.addEventListener('click', () => {
+    //                 animationModal.remove();
+    //             });
+
+    //             content.appendChild(closeBtn);
+    //         }, 3000);
+
+    //         // Auto close after 10 seconds
+    //         setTimeout(() => {
+    //             if (document.body.contains(animationModal)) {
+    //                 animationModal.remove();
+    //             }
+    //         }, 10000);
+    //     }
+
+
+    // Update this function to match the styling approach in showShipAnimationWithEncounters
+function showShipAnimation() {
+    // Create modal for animation
+    const animationModal = document.createElement('div');
+    animationModal.className = 'modal';
+    animationModal.id = 'animation-modal';
+    animationModal.style.display = 'flex';
+
+    // Create content
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.width = '90%';
+    content.style.maxWidth = '800px';
+    content.style.height = '400px';
+    content.style.padding = '0';
+    content.style.overflow = 'hidden';
+    content.style.backgroundColor = 'black';
+    content.style.borderRadius = '10px';
+    content.style.position = 'relative';
+
+    // Create starfield background with CSS
+    const starfield = document.createElement('div');
+    starfield.style.width = '100%';
+    starfield.style.height = '100%';
+    starfield.style.position = 'absolute';
+    starfield.style.background = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px), radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px), radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px)';
+    starfield.style.backgroundSize = '550px 550px, 350px 350px, 250px 250px, 150px 150px';
+    starfield.style.backgroundPosition = '0 0, 40px 60px, 130px 270px, 70px 100px';
+    starfield.style.animation = 'flying 20s linear infinite';
+
+    // Create ship container
+    const shipContainer = document.createElement('div');
+    shipContainer.style.position = 'absolute';
+    shipContainer.style.left = '50%';
+    shipContainer.style.top = '50%';
+    shipContainer.style.transform = 'translate(-50%, -50%)';
+    shipContainer.style.width = '300px';
+    shipContainer.style.height = '150px';
+
+    // Add elements to DOM
+    content.appendChild(starfield);
+    content.appendChild(shipContainer);
+    animationModal.appendChild(content);
+    document.body.appendChild(animationModal);
+
+    // Create ship based on existing design or use default
+    if (gameState.shipDesign && gameState.shipDesign.length > 0) {
+        // Use the same rendering function as in the encounter animation
+        renderShipInContainer(shipContainer, 0.3);
+    } else {
+        // Default ship shape if no design
+        const defaultShip = document.createElement('div');
+        defaultShip.style.width = '100%';
+        defaultShip.style.height = '100%';
+        defaultShip.style.background = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)';
+        defaultShip.style.clipPath = 'polygon(0% 50%, 30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%)';
+        shipContainer.appendChild(defaultShip);
+    }
+
+    // Add close button after delay
+    setTimeout(() => {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn';
+        closeBtn.style.position = 'absolute';
+        closeBtn.style.bottom = '10px';
+        closeBtn.style.right = '10px';
+        closeBtn.textContent = 'Continue';
+
+        closeBtn.addEventListener('click', () => {
+            animationModal.remove();
+        });
+
+        content.appendChild(closeBtn);
+    }, 3000);
+
+    // Auto close after 10 seconds
+    setTimeout(() => {
+        if (document.body.contains(animationModal)) {
+            animationModal.remove();
+        }
+    }, 10000);
+}
 
         // Set up all event listeners
         function setupEventListeners() {
@@ -6368,6 +7412,7 @@
         window.addEventListener('load', function () {
             initGame();
             initEncounterSystem();
+            addResizeHandler();
         });
 
     </script>
